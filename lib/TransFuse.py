@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import numpy as np
 import math
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
+import os
 
 
 class ChannelPool(nn.Module):
@@ -73,8 +74,8 @@ class TransFuse_S(nn.Module):
         super(TransFuse_S, self).__init__()
 
         self.resnet = resnet()
-        if pretrained:
-            self.resnet.load_state_dict(torch.load('pretrained/resnet34-333f7ec4.pth'))
+        self.resnet.load_state_dict(torch.load('pretrained/resnet34-43635321.pth'))
+        
         self.resnet.fc = nn.Identity()
         self.resnet.layer4 = nn.Identity()
 

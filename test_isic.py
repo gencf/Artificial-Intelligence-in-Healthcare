@@ -35,11 +35,12 @@ def mean_dice_np(y_true, y_pred, **kwargs):
 
 
 if __name__ == '__main__':
+    n = 50
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ckpt_path', type=str, default='snapshots/TransFuse-19_best.pth')
+    parser.add_argument('--ckpt_path', type=str, default='/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/KANAMA/TransFuse_KANAMA_'+str(n)+'_Epoch.pth')
     parser.add_argument('--test_path', type=str,
-                        default='data/', help='path to test dataset')
-    parser.add_argument('--save_path', type=str, default=None, help='path to save inference segmentation')
+                        default='/content/KANAMA_npy_files', help='path to test dataset')
+    parser.add_argument('--save_path', type=str, default="/content/results", help='path to save inference segmentation')
 
     opt = parser.parse_args()
 
@@ -53,8 +54,8 @@ if __name__ == '__main__':
 
     print('evaluating model: ', opt.ckpt_path)
 
-    image_root = '{}/data_test.npy'.format(opt.test_path)
-    gt_root = '{}/mask_test.npy'.format(opt.test_path)
+    image_root = '{}/data_kanama_test.npy'.format(opt.test_path)
+    gt_root = '{}/mask_kanama_test.npy'.format(opt.test_path)
     test_loader = test_dataset(image_root, gt_root)
 
     dice_bank = []

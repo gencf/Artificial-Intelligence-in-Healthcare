@@ -1,10 +1,4 @@
-DeiT.py
-Geçen ay
-9 Ağu
-İ
-Bir öğe yüklediniz
-Metin
-DeiT.py
+
 # Copyright (c) 2015-present, Facebook, Inc.
 # All rights reserved.
 import torch

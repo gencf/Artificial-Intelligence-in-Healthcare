@@ -1,3 +1,10 @@
+DeiT.py
+Geçen ay
+9 Ağu
+İ
+Bir öğe yüklediniz
+Metin
+DeiT.py
 # Copyright (c) 2015-present, Facebook, Inc.
 # All rights reserved.
 import torch
@@ -48,9 +55,8 @@ def deit_small_patch16_224(pretrained=False, **kwargs):
         patch_size=16, embed_dim=384, depth=8, num_heads=6, mlp_ratio=4, qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
     model.default_cfg = _cfg()
-    if pretrained:
-        ckpt = torch.load('pretrained/deit_small_patch16_224-cd65a155.pth')
-        model.load_state_dict(ckpt['model'], strict=False)
+    ckpt = torch.load('pretrained/deit_small_patch16_224-cd65a155.pth')
+    model.load_state_dict(ckpt['model'], strict=False)
     
     pe = model.pos_embed[:, 1:, :].detach()
     pe = pe.transpose(-1, -2)

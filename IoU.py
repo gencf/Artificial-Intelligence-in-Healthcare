@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import cv2
 import os
-from google.colab.patches import cv2_imshow
 
 def loadMask(i):
     """
@@ -19,9 +18,9 @@ def loadMask(i):
     return mask
 
 def showGrayScale(mask, title):
-    cv2_imshow(mask)
+    pass
 
-# 8 bit ve tek kanallı, normal (0), KANAMAk (1) ve kanama (2) sınıflarından oluşan
+# 8 bit ve tek kanallı, normal (0), iskemik (1) ve kanama (2) sınıflarından oluşan
 # groundTruthMask ve predictedMask'i parametre olarak alip predictedMask'i puanlayan fonksiyon.
 # Maskelerin her adımdakı değişiminlerini görmek için showSteps = True.
 def calculateIoU(groundTruthMask, predictedMask, showSteps = False):
@@ -96,11 +95,10 @@ def calculateIoU(groundTruthMask, predictedMask, showSteps = False):
     return score
 
 if __name__ == "__main__":
-    path = "/content/new_dataset/KANAMA/test/MASKS/"
-    sum = 0
+    path = "/kaggle/working/new_dataset/KANAMA/test/MASKS/"
     for i in range(len(os.listdir(path))):
         groundtruthMask = loadMask(path + str(i)+".png")
         predictedMask = loadMask("/content/results/"+ str(i) +"_pred.jpg")
         iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
         iou = str(iou).replace(".", ",")
-        print(iou)     
+        print(iou)

@@ -74,8 +74,6 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
 
     if epoch % checkpoint == 0 or epoch == total_step:
         torch.save(model.state_dict(), save_path)
-        shutil.copy(save_path, "/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/ISKEMI/" + 'TransFuse_ISKEMI_' + 
-              str(epoch + n) + '_Epoch.pth')
         print('[Saving Snapshot:]', save_path)
 
     return best_loss

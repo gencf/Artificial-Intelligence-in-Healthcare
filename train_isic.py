@@ -1,95 +1,168 @@
-import os
 import torch
-import argparse
-import yaml
-import tqdm
-import sys
-import shutil
-import argparse
-
 from torch.autograd import Variable
-from easydict import EasyDict as ed
+import argparse
+from datetime import datetime
+from lib.TransFuse import TransFuse_S
+from utils.dataloader import get_loader, test_dataset
+from utils.utils import AvgMeter
+import torch.nn.functional as F
+import numpy as np
+import matplotlib.pyplot as plt
+from test_isic import mean_dice_np, mean_iou_np
+import os
+import shutil
 
-filepath = os.path.split(__file__)[0]
-repopath = os.path.split(filepath)[0]
-sys.path.append(repopath)
 
-from lib import *
-from utils.dataloader import *
-from utils.utils import *
+def structure_loss(pred, mask):
+    weit = 1 + 5*torch.abs(F.avg_pool2d(mask, kernel_size=31, stride=1, padding=15) - mask)
+    wbce = F.binary_cross_entropy_with_logits(pred, mask, reduction='none')
+    wbce = (weit*wbce).sum(dim=(2, 3)) / weit.sum(dim=(2, 3))
+
+    pred = torch.sigmoid(pred)
+    inter = ((pred * mask)*weit).sum(dim=(2, 3))
+    union = ((pred + mask)*weit).sum(dim=(2, 3))
+    wiou = 1 - (inter + 1)/(union - inter+1)
+    return (wbce + wiou).mean()
 
 
-def _args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='configs/xomcnet.yaml')
-    parser.add_argument('--pretrained', type=int, default=1)
-    parser.add_argument('--dataset', type=str, default="new_dataset")
-    parser.add_argument('--inme', type=str, default="ISKEMI")
-    parser.add_argument('--dicom', type=int, default=0)
-    return parser.parse_args()
-
-def train(opt, args):
-    dataset = args.dataset
-    path = os.path.join("/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/UACANet", dataset, args.inme)
-    n = 0
-    model = eval(opt.Model.name)(opt.Model).cuda()
-
-    if args.pretrained:
-        dirlist = [v.split(".")[0].split("_")[-2] for v in os.listdir(path)]
-        n = max([int(i) for i in dirlist])
-        model.load_state_dict(torch.load(os.path.join(path, "UACANet_" + args.inme + "_" + str(n) + "_Epoch.pth")))
-        model.cuda()
-        model.eval()
-
-    image_root = os.path.join(opt.Train.train_path, args.inme, "train", 'PNG')
-    gt_root = os.path.join(opt.Train.train_path, args.inme, "train", 'MASKS')
-    print(args.inme, n)
-    train_dataset = PolypDataset(image_root, gt_root, opt.Train)
-    train_loader = data.DataLoader(dataset=train_dataset,
-                                   batch_size=opt.Train.batchsize,
-                                   shuffle=opt.Train.shuffle,
-                                   num_workers=opt.Train.num_workers,
-                                   pin_memory=opt.Train.pin_memory)
-
-    params = model.parameters()
-    optimizer = torch.optim.Adam(params, opt.Train.lr)
-    scheduler = PolyLr(optimizer, gamma=opt.Train.gamma,
-                       minimum_lr=opt.Train.min_learning_rate,
-                       max_iteration=len(train_loader) * opt.Train.epoch,
-                       warmup_iteration=opt.Train.warmup_iteration)
+def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
     model.train()
+    loss_record2, loss_record3, loss_record4 = AvgMeter(), AvgMeter(), AvgMeter()
+    accum = 0
+    for i, pack in enumerate(train_loader, start=1):
+        # ---- data prepare ----
+        images, gts = pack
+        images = Variable(images).cuda()
+        gts = Variable(gts).cuda()
 
-    print('#' * 20, 'Train prep done, start training', '#' * 20)
+        # ---- forward ----
+        
+        lateral_map_4, lateral_map_3, lateral_map_2 = model(images)
 
-    for epoch in tqdm.tqdm(range(1, opt.Train.epoch + 1), desc='Epoch', total=opt.Train.epoch, position=0,
-                           bar_format='{desc:<5.5}{percentage:3.0f}%|{bar:40}{r_bar}'):
-        pbar = tqdm.tqdm(enumerate(train_loader, start=1), desc='Iter', total=len(train_loader), position=1,
-                         leave=False, bar_format='{desc:<5.5}{percentage:3.0f}%|{bar:40}{r_bar}')
-        for i, sample in pbar:
-            optimizer.zero_grad()
-            images, gts = sample['image'], sample['gt']
-            images = images.cuda()
-            gts = gts.cuda()
-            out = model(images, gts)
-            out['loss'].backward()
-            clip_gradient(optimizer, opt.Train.clip)
-            optimizer.step()
-            scheduler.step()
-            pbar.set_postfix({'loss': out['loss'].item()})
+        # ---- loss function ----
+        loss4 = structure_loss(lateral_map_4, gts)
+        loss3 = structure_loss(lateral_map_3, gts)
+        loss2 = structure_loss(lateral_map_2, gts)
 
-        os.makedirs(opt.Train.train_save, exist_ok=True)
-        if epoch % opt.Train.checkpoint_epoch == 0:
-            torch.save(model.state_dict(),
-                       os.path.join(opt.Train.train_save, "UACANet_" + args.inme + "_" + str(epoch + n) + '_Epoch.pth'))
-            shutil.copy("/content/UACANet/snapshots/UACANet-L/" + "UACANet_" + args.inme + "_" + str(epoch + n) + "_Epoch.pth",
-                        os.path.join(path, "UACANet_" + args.inme + "_" + str(epoch + n) + "_Epoch.pth"))
+        loss = 0.5 * loss2 + 0.3 * loss3 + 0.2 * loss4
 
-    print('#' * 20, 'Train done', '#' * 20)
+        # ---- backward ----
+        loss.backward() 
+        torch.nn.utils.clip_grad_norm_(model.parameters(), opt.grad_norm)
+        optimizer.step()
+        optimizer.zero_grad()
+
+        # ---- recording loss ----
+        loss_record2.update(loss2.data, opt.batchsize)
+        loss_record3.update(loss3.data, opt.batchsize)
+        loss_record4.update(loss4.data, opt.batchsize)
+
+        # ---- train visualization ----
+        if i % 20 == 0 or i == total_step:
+            print('{} Epoch [{:03d}/{:03d}], Step [{:04d}/{:04d}], '
+                  '[lateral-2: {:.4f}, lateral-3: {:0.4f}, lateral-4: {:0.4f}]'.  
+                  format(datetime.now(), epoch, opt.epoch, i, total_step,
+                         loss_record2.show(), loss_record3.show(), loss_record4.show()))
+                      
+    save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch.pth')
+    os.makedirs("/content/TransFuse/snapshots", exist_ok=True)
+
+    meanloss = test(model, opt.test_path)
+    if meanloss < best_loss:
+        print('mean loss: ', meanloss)
+        best_loss = meanloss
+
+    if epoch % checkpoint == 0 or epoch == total_step:
+        torch.save(model.state_dict(), save_path)
+        shutil.copy(save_path, "/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/ISKEMI/" + 'TransFuse_ISKEMI_' + 
+              str(epoch + n) + '_Epoch.pth')
+        print('[Saving Snapshot:]', save_path)
+
+    return best_loss
+
+
+def test(model, path):
+
+    model.eval()
+    mean_loss = []
+
+    image_root = '{}/data_iskemi_test.npy'.format(path)
+    gt_root = '{}/mask_iskemi_test.npy'.format(path)
+    test_loader = test_dataset(image_root, gt_root)
+
+    dice_bank = []
+    iou_bank = []
+    loss_bank = []
+    acc_bank = []
+
+    for i in range(test_loader.size):
+        image, gt = test_loader.load_data()
+        image = image.cuda()
+
+        with torch.no_grad():
+            _, _, res = model(image)
+        loss = structure_loss(res, torch.tensor(gt).unsqueeze(0).unsqueeze(0).cuda())
+
+        res = res.sigmoid().data.cpu().numpy().squeeze()
+        gt = 1*(gt>0.5)            
+        res = 1*(res > 0.5)
+
+        dice = mean_dice_np(gt, res)
+        iou = mean_iou_np(gt, res)
+        acc = np.sum(res == gt) / (res.shape[0]*res.shape[1])
+
+        loss_bank.append(loss.item())
+        dice_bank.append(dice)
+        iou_bank.append(iou)
+        acc_bank.append(acc)
+        
+    print('Test Loss: {:.4f}, Dice: {:.4f}, IoU: {:.4f}, Acc: {:.4f}'.
+        format(np.mean(loss_bank), np.mean(dice_bank), np.mean(iou_bank), np.mean(acc_bank)))
+
+    mean_loss.append(np.mean(loss_bank))
+
+    return mean_loss[0] 
 
 
 if __name__ == '__main__':
-    args = _args()
-    opt = ed(yaml.load(open(args.config), yaml.FullLoader))
-    if args.dicom:
-        opt.Train.transforms.resize.size = [352, 352, 3]
-    train(opt, args)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--epoch', type=int, default=50, help='epoch number')
+    parser.add_argument('--lr', type=float, default=7e-5, help='learning rate')
+    parser.add_argument('--batchsize', type=int, default=16, help='training batch size')
+    parser.add_argument('--grad_norm', type=float, default=2.0, help='gradient clipping norm')
+    parser.add_argument('--train_path', type=str,
+                        default='/content/ISKEMI_npy_files', help='path to train dataset')
+    parser.add_argument('--test_path', type=str,
+                        default='/content/ISKEMI_npy_files', help='path to test dataset')
+    parser.add_argument('--train_save', type=str, default='/content/TransFuse/snapshots')
+    parser.add_argument('--beta1', type=float, default=0.5, help='beta1 of adam optimizer')
+    parser.add_argument('--beta2', type=float, default=0.999, help='beta2 of adam optimizer')
+    parser.add_argument('--pretrained', type=int, default=1)
+    parser.add_argument('--checkpoint', type=int, default=1)
+
+    opt = parser.parse_args()
+
+    # ---- build models ----
+    model = TransFuse_S(pretrained=opt.pretrained).cuda()
+    n=0
+    if opt.pretrained:
+        dirlist = [v.split(".")[0].split("_")[-2] for v in os.listdir("/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/ISKEMI")]
+        n = max([int(i) for i in dirlist])
+        print(n)
+        model_dir = "/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/ISKEMI/TransFuse_ISKEMI_"+str(n)+"_Epoch.pth"
+        model.load_state_dict(torch.load(model_dir))
+    params = model.parameters()
+    optimizer = torch.optim.Adam(params, opt.lr, betas=(opt.beta1, opt.beta2))
+     
+    image_root = '{}/data_iskemi_train.npy'.format(opt.train_path)
+    gt_root = '{}/mask_iskemi_train.npy'.format(opt.train_path)
+
+    train_loader = get_loader(image_root, gt_root, batchsize=opt.batchsize)
+    total_step = len(train_loader)
+
+    print("#"*20, "Start Training", "#"*20)
+
+    best_loss = 1e5
+    for epoch in range(1, opt.epoch + 1):
+        best_loss = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint)
+        

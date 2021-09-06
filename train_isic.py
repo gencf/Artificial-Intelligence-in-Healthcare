@@ -131,9 +131,9 @@ if __name__ == '__main__':
     parser.add_argument('--batchsize', type=int, default=16, help='training batch size')
     parser.add_argument('--grad_norm', type=float, default=2.0, help='gradient clipping norm')
     parser.add_argument('--train_path', type=str,
-                        default='/content/ISKEMI_npy_files', help='path to train dataset')
+                        default='/content/npy_files', help='path to train dataset')
     parser.add_argument('--test_path', type=str,
-                        default='/content/ISKEMI_npy_files', help='path to test dataset')
+                        default='/content/npy_files', help='path to test dataset')
     parser.add_argument('--train_save', type=str, default='/content/TransFuse/snapshots')
     parser.add_argument('--beta1', type=float, default=0.5, help='beta1 of adam optimizer')
     parser.add_argument('--beta2', type=float, default=0.999, help='beta2 of adam optimizer')

@@ -148,8 +148,10 @@ if __name__ == '__main__':
     model = TransFuse_S(pretrained=opt.pretrained).cuda()
     n=0
     if opt.pretrained:
-        
-        model_dir = "/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/KANAMA/TransFuse_KANAMA_"+str(n)+"_Epoch.pth"
+        dirlist = [v.split(".")[0].split("_")[-2] for v in os.listdir(opt.pretrained_path)]
+        n = max([int(i) for i in dirlist])
+        print("KANAMA", n)
+        model_dir = os.path.join(opt.pretrained_path, 'TransFuse_KANAMA_' + str(n) + '_Epoch.pth')
         model.load_state_dict(torch.load(model_dir))
     params = model.parameters()
     optimizer = torch.optim.Adam(params, opt.lr, betas=(opt.beta1, opt.beta2))

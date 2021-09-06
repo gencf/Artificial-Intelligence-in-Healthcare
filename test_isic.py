@@ -35,7 +35,7 @@ def mean_dice_np(y_true, y_pred, **kwargs):
 
 
 if __name__ == '__main__':
-    parser.add_argument('--ckpt_path', type=str, default='/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/ISKEMI/TransFuse_ISKEMI_'+str(100)+'_Epoch.pth')
+    parser.add_argument('--ckpt_path', type=str, default='/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/KANAMA/TransFuse_KANAMA_'+str(100)+'_Epoch.pth')
     parser.add_argument('--test_path', type=str,
                         default='/kaggle/working/npy_files', help='path to test dataset')
     parser.add_argument('--save_path', type=str, default="/kaggle/working/results", help='path to save inference segmentation')

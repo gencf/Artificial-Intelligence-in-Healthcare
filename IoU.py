@@ -95,10 +95,10 @@ def calculateIoU(groundTruthMask, predictedMask, showSteps = False):
     return score
 
 if __name__ == "__main__":
-    path = "/content/new_dataset/ISKEMI/test/MASKS/"
+    path = "/kaggle/working/new_dataset/ISKEMI/test/MASKS/"
     for i in range(len(os.listdir(path))):
         groundtruthMask = loadMask(path + str(i)+".png")
         predictedMask = loadMask("/content/results/"+ str(i) +"_pred.jpg")
         iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
         iou = str(iou).replace(".", ",")
-        print(iou)     
+        print(iou)

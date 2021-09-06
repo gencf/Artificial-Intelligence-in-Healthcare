@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import cv2
 import os
-from google.colab.patches import cv2_imshow
 
 def loadMask(i):
     """
@@ -19,7 +18,7 @@ def loadMask(i):
     return mask
 
 def showGrayScale(mask, title):
-    cv2_imshow(mask)
+    pass
 
 # 8 bit ve tek kanallı, normal (0), iskemik (1) ve kanama (2) sınıflarından oluşan
 # groundTruthMask ve predictedMask'i parametre olarak alip predictedMask'i puanlayan fonksiyon.

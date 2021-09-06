@@ -65,7 +65,7 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
                          loss_record2.show(), loss_record3.show(), loss_record4.show()))
                       
     save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch.pth')
-    os.makedirs("/content/TransFuse/snapshots", exist_ok=True)
+    os.makedirs(opt.train_save, exist_ok=True)
 
     meanloss = test(model, opt.test_path)
     if meanloss < best_loss:

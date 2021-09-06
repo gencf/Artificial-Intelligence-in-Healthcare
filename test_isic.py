@@ -35,14 +35,16 @@ def mean_dice_np(y_true, y_pred, **kwargs):
 
 
 if __name__ == '__main__':
-    n = 50
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--ckpt_path', type=str, default='/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/KANAMA/TransFuse_KANAMA_'+str(n)+'_Epoch.pth')
+    parser.add_argument('--ckpt_path', type=str, default='/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/ISKEMI/TransFuse_ISKEMI_'+str(100)+'_Epoch.pth')
     parser.add_argument('--test_path', type=str,
-                        default='/content/KANAMA_npy_files', help='path to test dataset')
-    parser.add_argument('--save_path', type=str, default="/content/results", help='path to save inference segmentation')
-
+                        default='/kaggle/working/npy_files', help='path to test dataset')
+    parser.add_argument('--save_path', type=str, default="/kaggle/working/results", help='path to save inference segmentation')
+    parser.add_argument('--epoch', type=int, default=100, help='epoch for inference')
+    parser.add_argument('--model_path', type=str, default='/kaggle/input/models', help='path for testing models')
+    
     opt = parser.parse_args()
+
+    opt.ckpt_path = os.path.join(opt.model_path, 'TransFuse_KANAMA_' + str(opt.epoch) + '_Epoch.pth')
 
     model = TransFuse_S().cuda()
     model.load_state_dict(torch.load(opt.ckpt_path))

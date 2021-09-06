@@ -136,7 +136,7 @@ if __name__ == '__main__':
                         default='/kaggle/input/models', help='path for pretraining')
     parser.add_argument('--pretrained_epoch', type=int,
                         default=100, help='epoch for pretraining')
-    parser.add_argument('--train_save', type=str, default='/content/TransFuse/snapshots')
+    parser.add_argument('--train_save', type=str, default='/kaggle/working/TransFuse/snapshots')
     parser.add_argument('--beta1', type=float, default=0.5, help='beta1 of adam optimizer')
     parser.add_argument('--beta2', type=float, default=0.999, help='beta2 of adam optimizer')
     parser.add_argument('--pretrained', type=int, default=1)

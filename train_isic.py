@@ -65,7 +65,7 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
                          loss_record2.show(), loss_record3.show(), loss_record4.show()))
                       
     save_path = os.path.join(opt.train_save, 'TransFuse_KANAMA_' + str(epoch + n) + '_Epoch.pth')
-    os.makedirs("/content/TransFuse/snapshots", exist_ok=True)
+    os.makedirs(save_path, exist_ok=True)
 
     meanloss = test(model, opt.test_path)
     if meanloss < best_loss:
@@ -131,6 +131,8 @@ if __name__ == '__main__':
     parser.add_argument('--train_path', type=str,
                         default='/content/KANAMA_npy_files', help='path to train dataset')
     parser.add_argument('--test_path', type=str,
+                        default='/content/KANAMA_npy_files', help='path to test dataset')
+    parser.add_argument('--pretrained_path', type=str,
                         default='/content/KANAMA_npy_files', help='path to test dataset')
     parser.add_argument('--train_save', type=str, default='/content/TransFuse/snapshots')
     parser.add_argument('--beta1', type=float, default=0.5, help='beta1 of adam optimizer')

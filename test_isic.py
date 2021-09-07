@@ -6,19 +6,41 @@ from lib.TransFuse import TransFuse_S
 from utils.dataloader import test_dataset
 import imageio
 
-
-def mean_iou_np(y_true, y_pred, **kwargs):
-    """
-    compute mean iou for binary segmentation map via numpy
-    """
-    axes = (0, 1) 
-    intersection = np.sum(np.abs(y_pred * y_true), axis=axes) 
-    mask_sum = np.sum(np.abs(y_true), axis=axes) + np.sum(np.abs(y_pred), axis=axes)
-    union = mask_sum  - intersection 
+def mean_iou_np(groundTruthMask, predictedMask):
     
-    smooth = .001
-    iou = (intersection + smooth) / (union + smooth)
-    return iou
+    # 1 ve 2 maskelerini ayrı ayrı oluşturuyoruz (0 ve 255 değerlerinin olduğu birer maske olarak)
+    mask1 = np.where(groundtruthMask == 255, 255, 0).astype(np.uint8)
+    mask2 = np.where(groundtruthMask == 255, 255, 0).astype(np.uint8)      
+
+    # İki sınıfı ayrı ayrı dilate ve erode ediyoruz
+    kernel = np.ones((3,3))
+
+    erosion1 = cv2.erode(mask1, kernel, iterations=1) 
+    dilation1 = cv2.dilate(mask1, kernel, iterations=1)
+
+    erosion2 = cv2.erode(mask2, kernel, iterations=1) 
+    dilation2 = cv2.dilate(mask2, kernel, iterations=1)
+        
+    # Erode edilmiş ground truth class maskelerini birleştiriyoruz
+    erodedGroundtruth = np.zeros(groundtruthMask.shape, dtype = np.uint8)
+    erodedGroundtruth[erosion1 == 255] = 255
+    erodedGroundtruth[erosion2 == 255] = 255
+    
+    # Dilate edilmiş ground truth class maskelerini birleştiriyoruz
+    dilatedGroundtruth = np.zeros(groundtruthMask.shape, dtype = np.uint8)
+    dilatedGroundtruth[dilation1 == 255] = 255
+    dilatedGroundtruth[dilation2 == 255] = 255    
+       
+    # Dilate edilmiş ground truth ile kesişim
+    intersection = np.where(np.logical_and(dilatedGroundtruth == predictedMask, dilatedGroundtruth != 0), 255, 0)        
+    intersectionCount = np.count_nonzero(intersection)
+
+    # Erode edilmiş ground truth ile birleşim
+    union = np.where(np.logical_or(erodedGroundtruth != 0, predictedMask != 0), 255, 0)
+    unionCount = np.count_nonzero(union)
+
+    score = intersectionCount / unionCount 
+    return score
 
 
 def mean_dice_np(y_true, y_pred, **kwargs):
@@ -35,26 +57,26 @@ def mean_dice_np(y_true, y_pred, **kwargs):
 
 
 if __name__ == '__main__':
-    parser.add_argument('--ckpt_path', type=str, default='/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/TransFuse/new_dataset/KANAMA/TransFuse_KANAMA_'+str(100)+'_Epoch.pth')
-    parser.add_argument('--test_path', type=str,
-                        default='/kaggle/working/npy_files', help='path to test dataset')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--test_path', type=str, default='/kaggle/working/npy_files', help='path to test dataset')
     parser.add_argument('--save_path', type=str, default="/kaggle/working/results", help='path to save inference segmentation')
-    parser.add_argument('--epoch', type=int, default=100, help='epoch for inference')
+    parser.add_argument('--epoch', type=int, default=50, help='epoch for inference')
     parser.add_argument('--model_path', type=str, default='/kaggle/working/models', help='path for testing models')
     
     opt = parser.parse_args()
 
-    opt.ckpt_path = os.path.join(opt.model_path, 'TransFuse_KANAMA_' + str(opt.epoch) + '_Epoch.pth')
-
+    ckpt_path = os.path.join(opt.model_path, 'TransFuse_KANAMA_' + str(opt.epoch) + '_Epoch.pth')
+    
     model = TransFuse_S().cuda()
-    model.load_state_dict(torch.load(opt.ckpt_path))
+    model.load_state_dict(torch.load(ckpt_path))
     model.cuda()
     model.eval()
 
     if opt.save_path is not None:
         os.makedirs(opt.save_path, exist_ok=True)
 
-    print('evaluating model: ', opt.ckpt_path)
+    print('evaluating model: ', ckpt_path)
 
     image_root = '{}/data_kanama_test.npy'.format(opt.test_path)
     gt_root = '{}/mask_kanama_test.npy'.format(opt.test_path)

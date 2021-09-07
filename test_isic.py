@@ -7,42 +7,18 @@ from utils.dataloader import test_dataset
 import imageio
 import cv2
 
-def mean_iou_np(groundTruthMask, predictedMask):
+def mean_iou_np(y_true, y_pred, **kwargs):
+    """
+    compute mean iou for binary segmentation map via numpy
+    """
+    axes = (0, 1) 
+    intersection = np.sum(np.abs(y_pred * y_true), axis=axes) 
+    mask_sum = np.sum(np.abs(y_true), axis=axes) + np.sum(np.abs(y_pred), axis=axes)
+    union = mask_sum  - intersection 
     
-    # 1 ve 2 maskelerini ayrı ayrı oluşturuyoruz (0 ve 255 değerlerinin olduğu birer maske olarak)
-    mask1 = np.where(0 == 255, 255, 0).astype(np.uint8)
-    mask2 = np.where(groundtruthMask == 255, 255, 0).astype(np.uint8)      
-
-    # İki sınıfı ayrı ayrı dilate ve erode ediyoruz
-    kernel = np.ones((3,3))
-
-    erosion1 = cv2.erode(mask1, kernel, iterations=1) 
-    dilation1 = cv2.dilate(mask1, kernel, iterations=1)
-
-    erosion2 = cv2.erode(mask2, kernel, iterations=1) 
-    dilation2 = cv2.dilate(mask2, kernel, iterations=1)
-        
-    # Erode edilmiş ground truth class maskelerini birleştiriyoruz
-    erodedGroundtruth = np.zeros(groundtruthMask.shape, dtype = np.uint8)
-    erodedGroundtruth[erosion1 == 255] = 255
-    erodedGroundtruth[erosion2 == 255] = 255
-    
-    # Dilate edilmiş ground truth class maskelerini birleştiriyoruz
-    dilatedGroundtruth = np.zeros(groundtruthMask.shape, dtype = np.uint8)
-    dilatedGroundtruth[dilation1 == 255] = 255
-    dilatedGroundtruth[dilation2 == 255] = 255    
-       
-    # Dilate edilmiş ground truth ile kesişim
-    intersection = np.where(np.logical_and(dilatedGroundtruth == predictedMask, dilatedGroundtruth != 0), 255, 0)        
-    intersectionCount = np.count_nonzero(intersection)
-
-    # Erode edilmiş ground truth ile birleşim
-    union = np.where(np.logical_or(erodedGroundtruth != 0, predictedMask != 0), 255, 0)
-    unionCount = np.count_nonzero(union)
-
-    score = intersectionCount / unionCount 
-    return score
-
+    smooth = .001
+    iou = (intersection + smooth) / (union + smooth)
+    return iou
 
 def mean_dice_np(y_true, y_pred, **kwargs):
     """
@@ -88,15 +64,12 @@ if __name__ == '__main__':
     acc_bank = []
 
     for i in range(test_loader.size):
-        image, gt = test_loader.load_data()
-        groundtruthMask = gt.copy()
-        
+        image, gt = test_loader.load_data()        
         gt = 1*(gt>0.5)
         image = image.cuda()
 
         with torch.no_grad():
             _, _, res = model(image)
-            predictedMask = res.copy()
 
         res = res.sigmoid().data.cpu().numpy().squeeze()
         res = 1*(res > 0.5)
@@ -106,7 +79,7 @@ if __name__ == '__main__':
             imageio.imwrite(opt.save_path+'/'+str(i)+'_gt.jpg', gt)
 
         dice = mean_dice_np(gt, res)
-        iou = mean_iou_np(groundtruthMask, predictedMask)
+        iou = mean_iou_np(gt, res)
         acc = np.sum(res == gt) / (res.shape[0]*res.shape[1])
 
         acc_bank.append(acc)

@@ -60,6 +60,7 @@ def mean_dice_np(y_true, y_pred, **kwargs):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--ckpt_path', type=str, default='/kaggle/working/models/TransFuse_ISKEMI_100-Epoch')
     parser.add_argument('--test_path', type=str, default='/kaggle/working/npy_files', help='path to test dataset')
     parser.add_argument('--save_path', type=str, default="/kaggle/working/results", help='path to save inference segmentation')
     parser.add_argument('--epoch', type=int, default=50, help='epoch for inference')
@@ -96,9 +97,10 @@ if __name__ == '__main__':
 
         with torch.no_grad():
             _, _, res = model(image)
-            predictedMask = res.copy()
+            
 
         res = res.sigmoid().data.cpu().numpy().squeeze()
+        predictedMask = res.copy()
         res = 1*(res > 0.5)
 
         if opt.save_path is not None:

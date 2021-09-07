@@ -98,7 +98,7 @@ if __name__ == "__main__":
     path = "/kaggle/working/new_dataset/KANAMA/test/MASKS/"
     for i in range(len(os.listdir(path))):
         groundtruthMask = loadMask(path + str(i)+".png")
-        predictedMask = loadMask("/content/results/"+ str(i) +"_pred.jpg")
+        predictedMask = loadMask("/kaggle/working/results/"+ str(i) +"_pred.jpg")
         iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
         iou = str(iou).replace(".", ",")
         print(iou)

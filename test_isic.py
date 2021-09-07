@@ -7,6 +7,18 @@ from utils.dataloader import test_dataset
 import imageio
 import cv2
 
+def mean_iou_np(y_true, y_pred, **kwargs):
+    """
+    compute mean iou for binary segmentation map via numpy
+    """
+    axes = (0, 1) 
+    intersection = np.sum(np.abs(y_pred * y_true), axis=axes) 
+    mask_sum = np.sum(np.abs(y_true), axis=axes) + np.sum(np.abs(y_pred), axis=axes)
+    union = mask_sum  - intersection 
+    
+    smooth = .001
+    iou = (intersection + smooth) / (union + smooth)
+    return iou
 
 def mean_dice_np(y_true, y_pred, **kwargs):
     """

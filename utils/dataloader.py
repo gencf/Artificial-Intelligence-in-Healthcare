@@ -20,18 +20,18 @@ class SkinDataset(data.Dataset):
 
         self.img_transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406],
-                                 [0.229, 0.224, 0.225])
         ])
         self.gt_transform = transforms.Compose([
             transforms.ToTensor()])
         
         self.transform = A.Compose(
             [
+                A.RandomBrightnessContrast(p=0.25),
+                A.Sharpen(p=0.25),
                 A.ShiftScaleRotate(shift_limit=0.15, scale_limit=0.15, rotate_limit=25, p=0.5, border_mode=0),
-                A.ColorJitter(),
                 A.HorizontalFlip(),
                 A.VerticalFlip()
+                A.ToFloat(p=1),
             ]
         )
 
@@ -39,7 +39,7 @@ class SkinDataset(data.Dataset):
         
         image = self.images[index]
         gt = self.gts[index]
-        gt = gt/255.0
+        # gt = gt/255.0
 
         transformed = self.transform(image=image, mask=gt)
         image = self.img_transform(transformed['image'])
@@ -68,18 +68,23 @@ class test_dataset:
 
         self.transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406],
-                                 [0.229, 0.224, 0.225])
-            ])
+            )
+            
+        self.transformA = A.Compose([
+            A.ToFloat(p=1),
+            ]
+        )
         self.gt_transform = transforms.ToTensor()
         self.size = len(self.images)
         self.index = 0
 
     def load_data(self):
         image = self.images[self.index]
-        image = self.transform(image).unsqueeze(0)
         gt = self.gts[self.index]
-        gt = gt/255.0
+        # gt = gt/255.0
+        transformed = self.transformA(image=image, mask=gt)
+        image = self.transform(transformed["image"]).unsqueeze(0)
+        gt = transformed["mask"]
         self.index += 1
 
         return image, gt

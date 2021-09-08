@@ -7,6 +7,8 @@ from windowing import output
 from google.colab.patches import cv2_imshow
 import pydicom
 
+import albumentations as A
+
 from windowing import output
 
 
@@ -26,6 +28,11 @@ def augmentation(image, atype):
         image = cv2.flip(image,0)
     elif atype == "vflip":
         image = cv2.flip(image,1)
+    elif atype == "equalize":
+        transform = A.Compose([
+            A.Equalize(p=1)
+        ])
+        image = transform(image)["image"]
 
     return image
 
@@ -38,8 +45,9 @@ def dcm_loader(path, atype=0):
     pixelsr = augmentation(pixels.copy(), "rotated45")
     pixelsah = augmentation(pixelsa.copy(), "hflip")
     pixelsrh = augmentation(pixelsr.copy(), "hflip")
+    pixelse = augmentation(pixels.copy(), "equalize")
     
-    return [pixels, pixelsa, pixelsv, pixelsr, pixelsah, pixelsrh]
+    return [pixels, pixelsa, pixelsv, pixelsr, pixelsah, pixelsrh, pixelse]
 
 def binary_loader(path, atype=0):
     img = cv2.imread(path,0)
@@ -49,8 +57,9 @@ def binary_loader(path, atype=0):
     imgr = augmentation(img.copy(), "rotated45")
     imgrh = augmentation(imga.copy(), "hflip")
     imgah = augmentation(imgr.copy(), "hflip")
+    imge = augmentation(img.copy(), "equalize")
 
-    return [img, imga, imgv, imgr, imgrh, imgah]
+    return [img, imga, imgv, imgr, imgrh, imgah, imge]
  
 root = 'new_dataset/' # change to your data folder path
 data_f = ['ISKEMI/train/PNG/','ISKEMI/test/PNG/','KANAMA/train/PNG/','KANAMA/test/PNG/']
@@ -78,7 +87,7 @@ for index in range(2):
         length = len(sorted(os.listdir(root + data_f[j])))
         
         if "train" in path:
-            length *= 6
+            length *= 7
         
         imgs = np.uint8(np.zeros([length, height, width, 3]))
         masks = np.uint8(np.zeros([length, height, width]))

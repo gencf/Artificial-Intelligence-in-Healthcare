@@ -32,34 +32,21 @@ def augmentation(image, atype):
         transform = A.Compose([
             A.Equalize(p=1)
         ])
-        image = transform(image)["image"]
+        image = transform(image=image)["image"]
 
     return image
 
 
 def dcm_loader(path, atype=0):
-    pixels = output(path)
-
-    pixelsa = augmentation(pixels.copy(), "rotated")
-    pixelsv = augmentation(pixels.copy(), "vflip")
-    pixelsr = augmentation(pixels.copy(), "rotated45")
-    pixelsah = augmentation(pixelsa.copy(), "hflip")
-    pixelsrh = augmentation(pixelsr.copy(), "hflip")
+    pixels = output(path).astype(np.uint8)
+    print(pixels.dtype)
     pixelse = augmentation(pixels.copy(), "equalize")
     
-    return [pixels, pixelsa, pixelsv, pixelsr, pixelsah, pixelsrh, pixelse]
+    return [pixels, pixelse]
 
 def binary_loader(path, atype=0):
     img = cv2.imread(path,0)
-
-    imga = augmentation(img.copy(), "rotated")
-    imgv = augmentation(img.copy(), "vflip")
-    imgr = augmentation(img.copy(), "rotated45")
-    imgrh = augmentation(imga.copy(), "hflip")
-    imgah = augmentation(imgr.copy(), "hflip")
-    imge = augmentation(img.copy(), "equalize")
-
-    return [img, imga, imgv, imgr, imgrh, imgah, imge]
+    return [img, img]
  
 root = 'new_dataset/' # change to your data folder path
 data_f = ['ISKEMI/train/PNG/','ISKEMI/test/PNG/','KANAMA/train/PNG/','KANAMA/test/PNG/']
@@ -87,7 +74,7 @@ for index in range(2):
         length = len(sorted(os.listdir(root + data_f[j])))
         
         if "train" in path:
-            length *= 7
+            length *= 2
         
         imgs = np.uint8(np.zeros([length, height, width, 3]))
         masks = np.uint8(np.zeros([length, height, width]))

@@ -39,9 +39,7 @@ def augmentation(image, atype):
 
 def dcm_loader(path, atype=0):
     pixels = output(path).astype(np.uint8)
-    print(pixels.dtype)
-    pixelse = augmentation(pixels.copy(), "equalize")
-    
+    pixelse = augmentation(pixels.copy(), "equalize")    
     return [pixels, pixelse]
 
 def binary_loader(path, atype=0):

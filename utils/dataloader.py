@@ -26,12 +26,11 @@ class SkinDataset(data.Dataset):
         self.gt_transform = transforms.Compose([
             transforms.ToTensor()])
         
-        self.transform = A.Compose(
-            [
-             A.OneOf([
-                A.Transpose(p=0.3),
-                A.Flip(p=0.3)
-            ], p=0.5),    
+        self.transform = A.Compose([
+                
+             A.ShiftScaleRotate(shift_limit=0.15, scale_limit=0.15, rotate_limit=25, p=0.5, border_mode=0),
+             A.HorizontalFlip(),
+             A.VerticalFlip()  
 
              A.OneOf([
                 A.Equalize(p=0.2),

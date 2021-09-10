@@ -129,9 +129,9 @@ if __name__ == '__main__':
     parser.add_argument('--batchsize', type=int, default=16, help='training batch size')
     parser.add_argument('--grad_norm', type=float, default=2.0, help='gradient clipping norm')
     parser.add_argument('--train_path', type=str,
-                        default='/kaggle/working/int_npy_files', help='path to train dataset')
+                        default='/kaggle/working/npy_files', help='path to train dataset')
     parser.add_argument('--test_path', type=str,
-                        default='/kaggle/working/int_npy_files', help='path to test dataset')
+                        default='/kaggle/working/npy_files', help='path to test dataset')
     parser.add_argument('--pretrained_path', type=str,
                         default='/kaggle/input/models', help='path for pretraining')
     parser.add_argument('--train_save', type=str, default='/kaggle/working/TransFuse/snapshots')

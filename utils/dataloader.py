@@ -26,25 +26,29 @@ class SkinDataset(data.Dataset):
         self.gt_transform = transforms.Compose([
             transforms.ToTensor()])
         
-        value = 0.3
         self.transform = A.Compose(
             [
-                A.ShiftScaleRotate(shift_limit=0.15, scale_limit=0.15, rotate_limit=25, p=0.5, border_mode=0),
-                A.ColorJitter(),
-                A.HorizontalFlip(),
-                A.VerticalFlip()
-                A.Equalize(p=value),
-                A.CLAHE(p=value),
-                A.RandomBrightnessContrast(p=value),
-                A.RandomGamma(p=value),
-                A.Transpose(p=value),
-                A.Sharpen(p=value),         
-                A.OpticalDistortion(p=value),
-                A.GridDistortion(p=value),
-                A.ElasticTransform(p=value),
-                A.CenterCrop(400, 400, p=value),
-            ]
-        )
+             A.OneOf([
+                A.Transpose(p=0.3),
+                A.Flip(p=0.3)
+            ], p=0.5),    
+
+             A.OneOf([
+                A.Equalize(p=0.2),
+                A.CLAHE(clip_limit=2, p=0.4),
+                A.Emboss(p=0.4),
+                A.RandomBrightnessContrast(p=0.4),
+                A.ColorJitter(p=0.4),
+            ], p=0.8),  
+
+            A.OneOf([
+                A.ElasticTransform(p=0.3),
+                A.GridDistortion(p=0.3),
+                A.PiecewiseAffine(p=0.3),
+            ], p=0.8),
+
+            A.CenterCrop(400, 400, p=0.5)
+         ])
 
     def __getitem__(self, index):
         

@@ -36,7 +36,7 @@ def mean_dice_np(y_true, y_pred, **kwargs):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_path', type=str, default='/kaggle/working/int_npy_files', help='path to test dataset')
+    parser.add_argument('--test_path', type=str, default='/kaggle/working/npy_files', help='path to test dataset')
     parser.add_argument('--save_path', type=str, default="/kaggle/working/results", help='path to save inference segmentation')
     parser.add_argument('--epoch', type=int, default=50, help='epoch for inference')
     parser.add_argument('--model_path', type=str, default='/kaggle/working/models', help='path for testing models')

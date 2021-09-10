@@ -46,8 +46,6 @@ class SkinDataset(data.Dataset):
                 A.GridDistortion(p=0.3),
                 A.PiecewiseAffine(p=0.3),
             ], p=0.8),
-
-            A.CenterCrop(400, 400, p=0.5)
          ])
 
     def __getitem__(self, index):

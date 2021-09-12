@@ -26,25 +26,17 @@ class SkinDataset(data.Dataset):
         self.gt_transform = transforms.Compose([
             transforms.ToTensor()])
         
-        self.transform = A.Compose([
-                
-             A.ShiftScaleRotate(shift_limit=0.15, scale_limit=0.15, rotate_limit=25, p=0.5, border_mode=0),
-             A.HorizontalFlip(),
-             A.VerticalFlip(),  
-
-             A.OneOf([
-                A.Equalize(p=0.2),
-                A.CLAHE(clip_limit=2, p=0.4),
-                A.Emboss(p=0.4),
-                A.RandomBrightnessContrast(p=0.4),
-                A.ColorJitter(p=0.4),
-            ], p=0.8),  
-
-            A.OneOf([
-                A.ElasticTransform(p=0.3),
-                A.GridDistortion(p=0.3),
-                A.PiecewiseAffine(p=0.3),
-            ], p=0.8)
+        self.transform = A.Compose([                       
+              A.OneOf([
+                  A.RandomSizedCrop(min_max_height=(96, 192), height=192, width=256, p=0.5),
+                  A.PadIfNeeded(min_height=192, min_width=256, p=0.5)
+              ], p=1),    
+              A.VerticalFlip(p=0.5),              
+              A.RandomRotate90(p=0.5),
+              A.ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03, p=0.8),                 
+              A.CLAHE(p=0.8),
+              A.RandomBrightnessContrast(p=0.8),    
+              A.RandomGamma(p=0.8)
          ])
 
     def __getitem__(self, index):
@@ -95,7 +87,6 @@ class test_dataset:
         self.index += 1
 
         return image, gt
-
 
 
 if __name__ == '__main__':

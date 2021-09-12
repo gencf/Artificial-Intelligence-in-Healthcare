@@ -27,7 +27,7 @@ class SkinDataset(data.Dataset):
             transforms.ToTensor()])
         
         self.transform = A.Compose([ 
-             A.HorizontalFlip(),
+             A.HorizontalFlip()
         ])
 
     def __getitem__(self, index):

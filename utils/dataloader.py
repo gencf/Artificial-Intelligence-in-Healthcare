@@ -27,11 +27,14 @@ class SkinDataset(data.Dataset):
             transforms.ToTensor()])
         
         self.transform = A.Compose([ 
-              A.OneOf([
-                  A.RandomSizedCrop(min_max_height=(96, 192), height=192, width=256, p=0.5),
-                  A.PadIfNeeded(min_height=192, min_width=256, p=0.5)
-              ], p=1),    
-              A.VerticalFlip(p=0.5)
+             A.ShiftScaleRotate(shift_limit=0.15, scale_limit=0.15, rotate_limit=25, p=0.5, border_mode=0),
+             A.HorizontalFlip(),
+             A.VerticalFlip(), 
+             A.OneOf([
+                 A.ElasticTransform(p=0.3),
+                 A.GridDistortion(p=0.3),
+                 A.PiecewiseAffine(p=0.3),
+             ], p=0.8)            
         ])
 
     def __getitem__(self, index):

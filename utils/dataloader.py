@@ -31,10 +31,10 @@ class SkinDataset(data.Dataset):
              A.HorizontalFlip(),
              A.VerticalFlip(), 
              A.OneOf([
-                 A.ElasticTransform(p=0.3),
-                 A.GridDistortion(p=0.3),
-                 A.PiecewiseAffine(p=0.3),
-             ], p=0.8)            
+                  A.RandomSizedCrop(min_max_height=(96, 192), height=192, width=256, p=0.5),
+                  A.PadIfNeeded(min_height=192, min_width=256, p=0.5)
+             ], p=1),             
+        
         ])
 
     def __getitem__(self, index):

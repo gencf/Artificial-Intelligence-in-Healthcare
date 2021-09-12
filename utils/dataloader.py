@@ -27,7 +27,11 @@ class SkinDataset(data.Dataset):
             transforms.ToTensor()])
         
         self.transform = A.Compose([ 
-             A.HorizontalFlip()
+            A.OneOf([
+                A.ElasticTransform(p=0.3),
+                A.GridDistortion(p=0.3),
+                A.PiecewiseAffine(p=0.3),
+            ], p=0.8)
         ])
 
     def __getitem__(self, index):

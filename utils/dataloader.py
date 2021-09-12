@@ -27,11 +27,8 @@ class SkinDataset(data.Dataset):
             transforms.ToTensor()])
         
         self.transform = A.Compose([ 
-             A.OneOf([
-                 A.ElasticTransform(p=0.3),
-                 A.GridDistortion(p=0.3),
-                 A.PiecewiseAffine(p=0.3),
-            ], p=0.8)  
+             A.ShiftScaleRotate(shift_limit=0.15, scale_limit=0.15, rotate_limit=25, p=0.5, border_mode=0),
+             A.ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03, p=0.8)                
         ])
 
     def __getitem__(self, index):

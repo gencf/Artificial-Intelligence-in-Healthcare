@@ -26,8 +26,8 @@ class SkinDataset(data.Dataset):
         self.gt_transform = transforms.Compose([
             transforms.ToTensor()])
         
-        self.transform = A.Compose([                       
-             A.NoOp()
+        self.transform = A.Compose([ 
+               A.VerticalFlip()
          ])
 
     def __getitem__(self, index):

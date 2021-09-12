@@ -28,8 +28,6 @@ class SkinDataset(data.Dataset):
         
         self.transform = A.Compose([ 
              A.ShiftScaleRotate(shift_limit=0.15, scale_limit=0.15, rotate_limit=25, p=0.5, border_mode=0),
-             A.HorizontalFlip(),
-             A.VerticalFlip(), 
              A.OneOf([
                  A.ElasticTransform(p=0.3),
                  A.GridDistortion(p=0.3),

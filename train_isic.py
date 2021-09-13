@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from test_isic import mean_dice_np, mean_iou_np
 import os
 import shutil
+from IPython.display import FileLink
 
 
 def structure_loss(pred, mask):
@@ -75,6 +76,8 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
     if epoch % checkpoint == 0 or epoch == total_step:
         torch.save(model.state_dict(), save_path)
         print('[Saving Snapshot:]', save_path)
+        
+    FileLink(save_path)
 
     return best_loss
 

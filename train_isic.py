@@ -26,7 +26,7 @@ def structure_loss(pred, mask):
     return (wbce + wiou).mean()
 
 
-def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_epoch):
+def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_iou):
     model.train()
     loss_record2, loss_record3, loss_record4 = AvgMeter(), AvgMeter(), AvgMeter()
     accum = 0
@@ -67,7 +67,7 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_
                       
     os.makedirs(opt.train_save, exist_ok=True)
 
-    meanloss, best_iou = test(model, opt.test_path)
+    meanloss, meaniou = test(model, opt.test_path)
     if meanloss < best_loss:
         print('mean loss: ', meanloss)
         best_loss = meanloss

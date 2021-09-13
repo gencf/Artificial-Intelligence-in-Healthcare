@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from test_isic import mean_dice_np, mean_iou_np
 import os
 import shutil
+from IPython.display import FileLink
 
 
 def structure_loss(pred, mask):
@@ -25,7 +26,7 @@ def structure_loss(pred, mask):
     return (wbce + wiou).mean()
 
 
-def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
+def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_iou):
     model.train()
     loss_record2, loss_record3, loss_record4 = AvgMeter(), AvgMeter(), AvgMeter()
     accum = 0
@@ -64,17 +65,29 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
                   format(datetime.now(), epoch, opt.epoch, i, total_step,
                          loss_record2.show(), loss_record3.show(), loss_record4.show()))
                       
-    save_path = os.path.join(opt.train_save, 'TransFuse_KANAMA_' + str(epoch + n) + '_Epoch.pth')
     os.makedirs(opt.train_save, exist_ok=True)
 
-    meanloss = test(model, opt.test_path)
+    meanloss, meaniou = test(model, opt.test_path)
     if meanloss < best_loss:
         print('mean loss: ', meanloss)
         best_loss = meanloss
+        
+
+    if meaniou > best_iou:
+        best_iou = meaniou 
+        path = os.path.join(opt.train_save, '*best.pth')
+        cmd = f"rm {path}"
+        os.system(cmd)   
+        save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch_best.pth')
+        torch.save(model.state_dict(), save_path)
+        print('[Saving Best Snapshot:]', save_path)  
+     
+    print('Best IoU: ', best_iou)
 
     if epoch % checkpoint == 0 or epoch == total_step:
+        save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch.pth')
         torch.save(model.state_dict(), save_path)
-        print('[Saving Snapshot:]', save_path)
+        print('[Saving Snapshot:]', save_path)  
 
     return best_loss
 
@@ -84,8 +97,8 @@ def test(model, path):
     model.eval()
     mean_loss = []
 
-    image_root = '{}/data_kanama_test.npy'.format(path)
-    gt_root = '{}/mask_kanama_test.npy'.format(path)
+    image_root = '{}/data_iskemi_test.npy'.format(path)
+    gt_root = '{}/mask_iskemi_test.npy'.format(path)
     test_loader = test_dataset(image_root, gt_root)
 
     dice_bank = []
@@ -119,7 +132,7 @@ def test(model, path):
 
     mean_loss.append(np.mean(loss_bank))
 
-    return mean_loss[0] 
+    return mean_loss[0], np.mean(iou_bank)
 
 
 if __name__ == '__main__':
@@ -134,8 +147,6 @@ if __name__ == '__main__':
                         default='/kaggle/working/npy_files', help='path to test dataset')
     parser.add_argument('--pretrained_path', type=str,
                         default='/kaggle/input/models', help='path for pretraining')
-    parser.add_argument('--pretrained_epoch', type=int,
-                        default=100, help='epoch for pretraining')
     parser.add_argument('--train_save', type=str, default='/kaggle/working/TransFuse/snapshots')
     parser.add_argument('--beta1', type=float, default=0.5, help='beta1 of adam optimizer')
     parser.add_argument('--beta2', type=float, default=0.999, help='beta2 of adam optimizer')
@@ -150,14 +161,14 @@ if __name__ == '__main__':
     if opt.pretrained:
         dirlist = [v.split(".")[0].split("_")[-2] for v in os.listdir(opt.pretrained_path)]
         n = max([int(i) for i in dirlist])
-        print("KANAMA", n)
-        model_dir = os.path.join(opt.pretrained_path, 'TransFuse_KANAMA_' + str(n) + '_Epoch.pth')
+        print("ISKEMI", n)
+        model_dir = os.path.join(opt.pretrained_path, 'TransFuse_ISKEMI_' + str(n) + '_Epoch.pth')
         model.load_state_dict(torch.load(model_dir))
     params = model.parameters()
     optimizer = torch.optim.Adam(params, opt.lr, betas=(opt.beta1, opt.beta2))
      
-    image_root = '{}/data_kanama_train.npy'.format(opt.train_path)
-    gt_root = '{}/mask_kanama_train.npy'.format(opt.train_path)
+    image_root = '{}/data_iskemi_train.npy'.format(opt.train_path)
+    gt_root = '{}/mask_iskemi_train.npy'.format(opt.train_path)
 
     train_loader = get_loader(image_root, gt_root, batchsize=opt.batchsize)
     total_step = len(train_loader)
@@ -165,6 +176,6 @@ if __name__ == '__main__':
     print("#"*20, "Start Training", "#"*20)
 
     best_loss = 1e5
+    best_iou = 0
     for epoch in range(1, opt.epoch + 1):
-        best_loss = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint)
-        
+        best_loss = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint, best_iou)

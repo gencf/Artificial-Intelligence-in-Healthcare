@@ -26,7 +26,7 @@ def structure_loss(pred, mask):
     return (wbce + wiou).mean()
 
 
-def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
+def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_epoch):
     model.train()
     loss_record2, loss_record3, loss_record4 = AvgMeter(), AvgMeter(), AvgMeter()
     accum = 0
@@ -65,18 +65,25 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
                   format(datetime.now(), epoch, opt.epoch, i, total_step,
                          loss_record2.show(), loss_record3.show(), loss_record4.show()))
                       
-    save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch.pth')
     os.makedirs(opt.train_save, exist_ok=True)
 
-    meanloss = test(model, opt.test_path)
+    meanloss, best_iou = test(model, opt.test_path)
     if meanloss < best_loss:
         print('mean loss: ', meanloss)
         best_loss = meanloss
 
-    if epoch % checkpoint == 0 or epoch == total_step:
+    if meaniou > best_iou:
+        print('Best IoU: ', meaniou)
+        best_iou = meaniou           
+        os.system(f"rm {os.path.join(opt.train_save, '*best.pth'}")   
+        save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch_best.pth')
         torch.save(model.state_dict(), save_path)
         print('[Saving Snapshot:]', save_path)  
-        FileLink(save_path)
+        
+    elif epoch % checkpoint == 0 or epoch == total_step:
+        save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch.pth')
+        torch.save(model.state_dict(), save_path)
+        print('[Saving Snapshot:]', save_path)  
 
     return best_loss
 
@@ -121,7 +128,7 @@ def test(model, path):
 
     mean_loss.append(np.mean(loss_bank))
 
-    return mean_loss[0] 
+    return mean_loss[0], np.mean(iou_bank)
 
 
 if __name__ == '__main__':
@@ -165,6 +172,7 @@ if __name__ == '__main__':
     print("#"*20, "Start Training", "#"*20)
 
     best_loss = 1e5
+    best_iou = 0
     for epoch in range(1, opt.epoch + 1):
-        best_loss = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint)
+        best_loss = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint, bestiou)
         

@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from test_isic import mean_dice_np, mean_iou_np
 import os
 import shutil
+from IPython.display import FileLink
 
 
 def structure_loss(pred, mask):
@@ -25,7 +26,7 @@ def structure_loss(pred, mask):
     return (wbce + wiou).mean()
 
 
-def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
+def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_iou):
     model.train()
     loss_record2, loss_record3, loss_record4 = AvgMeter(), AvgMeter(), AvgMeter()
     accum = 0
@@ -64,22 +65,34 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
                   format(datetime.now(), epoch, opt.epoch, i, total_step,
                          loss_record2.show(), loss_record3.show(), loss_record4.show()))
                       
-    save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch.pth')
     os.makedirs(opt.train_save, exist_ok=True)
 
-    meanloss = test(model, opt.test_path)
+    meanloss, meaniou = test(model, opt.test_path, opt.png_path)
     if meanloss < best_loss:
         print('mean loss: ', meanloss)
         best_loss = meanloss
+        
+
+    if meaniou > best_iou:
+        best_iou = meaniou 
+        path = os.path.join(opt.train_save, '*best.pth')
+        cmd = f"rm {path}"
+        os.system(cmd)   
+        save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch_best.pth')
+        torch.save(model.state_dict(), save_path)
+        print('[Saving Best Snapshot:]', save_path)  
+     
+    print('Best IoU: ', best_iou)
 
     if epoch % checkpoint == 0 or epoch == total_step:
+        save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch.pth')
         torch.save(model.state_dict(), save_path)
-        print('[Saving Snapshot:]', save_path)
+        print('[Saving Snapshot:]', save_path)  
 
-    return best_loss
+    return best_loss, best_iou
 
 
-def test(model, path):
+def test(model, path, png_path):
 
     model.eval()
     mean_loss = []
@@ -104,9 +117,11 @@ def test(model, path):
         res = res.sigmoid().data.cpu().numpy().squeeze()
         gt = 1*(gt>0.5)            
         res = 1*(res > 0.5)
+        
+        gt_path = os.path.join(png_path, str(i)+".png")
 
         dice = mean_dice_np(gt, res)
-        iou = mean_iou_np(gt, res)
+        iou = mean_iou_np(gt_path, res)
         acc = np.sum(res == gt) / (res.shape[0]*res.shape[1])
 
         loss_bank.append(loss.item())
@@ -119,7 +134,7 @@ def test(model, path):
 
     mean_loss.append(np.mean(loss_bank))
 
-    return mean_loss[0] 
+    return mean_loss[0], np.mean(iou_bank)
 
 
 if __name__ == '__main__':
@@ -129,12 +144,14 @@ if __name__ == '__main__':
     parser.add_argument('--batchsize', type=int, default=16, help='training batch size')
     parser.add_argument('--grad_norm', type=float, default=2.0, help='gradient clipping norm')
     parser.add_argument('--train_path', type=str,
-                        default='/kaggle/working/npy_files', help='path to train dataset')
+                        default='npy_files', help='path to train dataset')
     parser.add_argument('--test_path', type=str,
-                        default='/kaggle/working/npy_files', help='path to test dataset')
+                        default='npy_files', help='path to test dataset')
+    parser.add_argument('--png_path', type=str,
+                        default='new_dataset/ISKEMI/test/MASKS')
     parser.add_argument('--pretrained_path', type=str,
-                        default='/kaggle/input/models', help='path for pretraining')
-    parser.add_argument('--train_save', type=str, default='/kaggle/working/TransFuse/snapshots')
+                        default='models', help='path for pretraining')
+    parser.add_argument('--train_save', type=str, default='TransFuse/snapshots')
     parser.add_argument('--beta1', type=float, default=0.5, help='beta1 of adam optimizer')
     parser.add_argument('--beta2', type=float, default=0.999, help='beta2 of adam optimizer')
     parser.add_argument('--pretrained', type=int, default=1)
@@ -163,6 +180,7 @@ if __name__ == '__main__':
     print("#"*20, "Start Training", "#"*20)
 
     best_loss = 1e5
+    best_iou = 0
     for epoch in range(1, opt.epoch + 1):
-        best_loss = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint)
+        best_loss, best_iou = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint, best_iou)
         

@@ -71,17 +71,19 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_
     if meanloss < best_loss:
         print('mean loss: ', meanloss)
         best_loss = meanloss
+        
 
     if meaniou > best_iou:
-        print('Best IoU: ', meaniou)
         best_iou = meaniou 
         path = os.path.join(opt.train_save, '*best.pth')
         cmd = f"rm {path}"
         os.system(cmd)   
         save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch_best.pth')
         torch.save(model.state_dict(), save_path)
-        print('[Saving Snapshot:]', save_path)  
-        
+        print('[Saving Best Snapshot:]', save_path)  
+     
+    print('Best IoU: ', best_iou)
+
     elif epoch % checkpoint == 0 or epoch == total_step:
         save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch.pth')
         torch.save(model.state_dict(), save_path)

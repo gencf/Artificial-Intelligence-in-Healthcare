@@ -23,7 +23,7 @@ def showGrayScale(mask, title):
 # 8 bit ve tek kanallı, normal (0), iskemik (1) ve kanama (2) sınıflarından oluşan
 # groundTruthMask ve predictedMask'i parametre olarak alip predictedMask'i puanlayan fonksiyon.
 # Maskelerin her adımdakı değişiminlerini görmek için showSteps = True.
-def calculateIoU(groundTruthMask, predictedMask, showSteps = False):
+def calculateIoU(groundtruthMask, predictedMask, showSteps = False):
     
     if showSteps:
         showGrayScale(groundtruthMask, "Ground Truth Maskesi")

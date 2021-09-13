@@ -89,7 +89,7 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_
         torch.save(model.state_dict(), save_path)
         print('[Saving Snapshot:]', save_path)  
 
-    return best_loss
+    return best_loss, best_iou
 
 
 def test(model, path):
@@ -178,4 +178,4 @@ if __name__ == '__main__':
     best_loss = 1e5
     best_iou = 0
     for epoch in range(1, opt.epoch + 1):
-        best_loss = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint, best_iou)
+        best_loss, best_iou = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint, best_iou)

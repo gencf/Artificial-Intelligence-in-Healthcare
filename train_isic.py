@@ -75,9 +75,8 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint):
 
     if epoch % checkpoint == 0 or epoch == total_step:
         torch.save(model.state_dict(), save_path)
-        print('[Saving Snapshot:]', save_path)
-        
-    FileLink(save_path)
+        print('[Saving Snapshot:]', save_path)  
+        FileLink(save_path)
 
     return best_loss
 

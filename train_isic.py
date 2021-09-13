@@ -84,7 +84,7 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_
      
     print('Best IoU: ', best_iou)
 
-    elif epoch % checkpoint == 0 or epoch == total_step:
+    if epoch % checkpoint == 0 or epoch == total_step:
         save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch.pth')
         torch.save(model.state_dict(), save_path)
         print('[Saving Snapshot:]', save_path)  

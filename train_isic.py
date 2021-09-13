@@ -176,5 +176,5 @@ if __name__ == '__main__':
     best_loss = 1e5
     best_iou = 0
     for epoch in range(1, opt.epoch + 1):
-        best_loss = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint, bestiou)
+        best_loss = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint, best_iou)
         

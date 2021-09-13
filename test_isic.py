@@ -7,18 +7,29 @@ from utils.dataloader import test_dataset
 import imageio
 import cv2
 
-def mean_iou_np(y_true, y_pred, **kwargs):
+from IoU import calculateIoU
+
+def mean_iou_np(gt_path, y_pred, **kwargs):
+
+    groundtruthMask = cv2.imread(gt_path, 0)
+    y_pred *= 255
+    predictedMask = cv2.resize(y_pred, groundtruthMask.shape[:2])
+    predictedMask[predictedMask > 128] = 255
+    predictedMask[predictedMask <= 128] = 0
+    iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
+    return iou
+
     """
     compute mean iou for binary segmentation map via numpy
     """
-    axes = (0, 1) 
-    intersection = np.sum(np.abs(y_pred * y_true), axis=axes) 
-    mask_sum = np.sum(np.abs(y_true), axis=axes) + np.sum(np.abs(y_pred), axis=axes)
-    union = mask_sum  - intersection 
+    # axes = (0, 1) 
+    # intersection = np.sum(np.abs(y_pred * y_true), axis=axes) 
+    # mask_sum = np.sum(np.abs(y_true), axis=axes) + np.sum(np.abs(y_pred), axis=axes)
+    # union = mask_sum  - intersection 
     
-    smooth = .001
-    iou = (intersection + smooth) / (union + smooth)
-    return iou
+    # smooth = .001
+    # iou = (intersection + smooth) / (union + smooth)
+    # return iou
 
 def mean_dice_np(y_true, y_pred, **kwargs):
     """

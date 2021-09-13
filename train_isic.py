@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from test_isic import mean_dice_np, mean_iou_np
 import os
 import shutil
-from IPython.display import FileLink
 
 
 def structure_loss(pred, mask):
@@ -67,7 +66,7 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_
                       
     os.makedirs(opt.train_save, exist_ok=True)
 
-    meanloss, meaniou = test(model, opt.test_path)
+    meanloss, meaniou = test(model, opt.test_path, opt.png_path)
     if meanloss < best_loss:
         print('mean loss: ', meanloss)
         best_loss = meanloss
@@ -92,7 +91,7 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_
     return best_loss, best_iou
 
 
-def test(model, path):
+def test(model, path, png_path):
 
     model.eval()
     mean_loss = []
@@ -117,9 +116,11 @@ def test(model, path):
         res = res.sigmoid().data.cpu().numpy().squeeze()
         gt = 1*(gt>0.5)            
         res = 1*(res > 0.5)
+        
+        gt_path = os.path.join(png_path, str(i)+".png")
 
         dice = mean_dice_np(gt, res)
-        iou = mean_iou_np(gt, res)
+        iou = mean_iou_np(gt_path, res)
         acc = np.sum(res == gt) / (res.shape[0]*res.shape[1])
 
         loss_bank.append(loss.item())
@@ -145,6 +146,8 @@ if __name__ == '__main__':
                         default='/kaggle/working/npy_files', help='path to train dataset')
     parser.add_argument('--test_path', type=str,
                         default='/kaggle/working/npy_files', help='path to test dataset')
+    parser.add_argument('--png_path', type=str,
+                        default='/kaggle/working/new_dataset/KANAMA/test/MASKS')
     parser.add_argument('--pretrained_path', type=str,
                         default='/kaggle/input/models', help='path for pretraining')
     parser.add_argument('--train_save', type=str, default='/kaggle/working/TransFuse/snapshots')
@@ -179,3 +182,4 @@ if __name__ == '__main__':
     best_iou = 0
     for epoch in range(1, opt.epoch + 1):
         best_loss, best_iou = train(train_loader, model, optimizer, epoch, best_loss, n, opt.checkpoint, best_iou)
+        

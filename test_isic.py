@@ -10,7 +10,7 @@ import cv2
 from IoU import calculateIoU
 
 def mean_iou_np(gt_path, y_pred, **kwargs):
-
+    print(gt_path)
     groundtruthMask = cv2.imread(gt_path, 0)
     y_pred *= 255
     predictedMask = cv2.resize(y_pred, groundtruthMask.shape[:2])

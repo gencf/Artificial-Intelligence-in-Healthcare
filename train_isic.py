@@ -78,14 +78,14 @@ def train(train_loader, model, optimizer, epoch, best_loss, n, checkpoint, best_
         path = os.path.join(opt.train_save, '*best.pth')
         cmd = f"rm {path}"
         os.system(cmd)   
-        save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch_best.pth')
+        save_path = os.path.join(opt.train_save, 'TransFuse_KANAMA_' + str(epoch + n) + '_Epoch_best.pth')
         torch.save(model.state_dict(), save_path)
         print('[Saving Best Snapshot:]', save_path)  
      
     print('Best IoU: ', best_iou)
 
     if epoch % checkpoint == 0 or epoch == total_step:
-        save_path = os.path.join(opt.train_save, 'TransFuse_ISKEMI_' + str(epoch + n) + '_Epoch.pth')
+        save_path = os.path.join(opt.train_save, 'TransFuse_KANAMA_' + str(epoch + n) + '_Epoch.pth')
         torch.save(model.state_dict(), save_path)
         print('[Saving Snapshot:]', save_path)  
 
@@ -97,8 +97,8 @@ def test(model, path):
     model.eval()
     mean_loss = []
 
-    image_root = '{}/data_iskemi_test.npy'.format(path)
-    gt_root = '{}/mask_iskemi_test.npy'.format(path)
+    image_root = '{}/data_kanama_test.npy'.format(path)
+    gt_root = '{}/mask_kanama_test.npy'.format(path)
     test_loader = test_dataset(image_root, gt_root)
 
     dice_bank = []
@@ -161,14 +161,14 @@ if __name__ == '__main__':
     if opt.pretrained:
         dirlist = [v.split(".")[0].split("_")[-2] for v in os.listdir(opt.pretrained_path)]
         n = max([int(i) for i in dirlist])
-        print("ISKEMI", n)
-        model_dir = os.path.join(opt.pretrained_path, 'TransFuse_ISKEMI_' + str(n) + '_Epoch.pth')
+        print("KANAMA", n)
+        model_dir = os.path.join(opt.pretrained_path, 'TransFuse_KANAMA_' + str(n) + '_Epoch.pth')
         model.load_state_dict(torch.load(model_dir))
     params = model.parameters()
     optimizer = torch.optim.Adam(params, opt.lr, betas=(opt.beta1, opt.beta2))
      
-    image_root = '{}/data_iskemi_train.npy'.format(opt.train_path)
-    gt_root = '{}/mask_iskemi_train.npy'.format(opt.train_path)
+    image_root = '{}/data_kanama_train.npy'.format(opt.train_path)
+    gt_root = '{}/mask_kanama_train.npy'.format(opt.train_path)
 
     train_loader = get_loader(image_root, gt_root, batchsize=opt.batchsize)
     total_step = len(train_loader)

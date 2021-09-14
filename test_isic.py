@@ -89,8 +89,8 @@ if __name__ == '__main__':
         res = 1*(res > 0.5)
 
         if opt.save_path is not None:
-            imageio.imwrite(opt.save_path+'/'+str(i)+'_pred.jpg', res)
-            imageio.imwrite(opt.save_path+'/'+str(i)+'_gt.jpg', gt)
+            cv2.imwrite(opt.save_path+'/'+str(i)+'_pred.png', res)
+            cv2.imwrite(opt.save_path+'/'+str(i)+'_gt.png', gt)
 
         dice = mean_dice_np(gt, res)
         gt_path = os.path.join(opt.png_path, str(i) + ".png")

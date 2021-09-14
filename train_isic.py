@@ -117,10 +117,14 @@ def test(model, path, png_path):
         gt = 1*(gt>0.5)            
         res = 1*(res > 0.5)
         
-        gt_path = os.path.join(png_path, str(i)+".png")
-
+        gt_path = os.path.join(png_path, str(i) + ".png")
+        res_path = os.path.join(opt.save_path, str(i) + '.png')  
+        
+        if opt.save_path is not None:
+            cv2.imwrite(res_path, res)
+            
         dice = mean_dice_np(gt, res)
-        iou = mean_iou_np(gt_path, res)
+        iou = mean_iou_np(gt_path, res_path)
         acc = np.sum(res == gt) / (res.shape[0]*res.shape[1])
 
         loss_bank.append(loss.item())
@@ -150,6 +154,7 @@ if __name__ == '__main__':
                         default='/kaggle/working/new_dataset/ISKEMI/test/MASKS')
     parser.add_argument('--pretrained_path', type=str,
                         default='/kaggle/input/models', help='path for pretraining')
+    parser.add_argument('--save_path', type=str, default="/kaggle/working/results", help='path to save inference segmentation')
     parser.add_argument('--train_save', type=str, default='/kaggle/working/TransFuse/snapshots')
     parser.add_argument('--beta1', type=float, default=0.5, help='beta1 of adam optimizer')
     parser.add_argument('--beta2', type=float, default=0.999, help='beta2 of adam optimizer')
@@ -157,7 +162,10 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint', type=int, default=1)
 
     opt = parser.parse_args()
-
+    
+    if opt.save_path is not None:
+        os.makedirs(opt.save_path, exist_ok=True)
+        
     # ---- build models ----
     model = TransFuse_S(pretrained=opt.pretrained).cuda()
     n=0
@@ -167,6 +175,7 @@ if __name__ == '__main__':
         print("ISKEMI", n)
         model_dir = os.path.join(opt.pretrained_path, 'TransFuse_ISKEMI_' + str(n) + '_Epoch.pth')
         model.load_state_dict(torch.load(model_dir))
+        
     params = model.parameters()
     optimizer = torch.optim.Adam(params, opt.lr, betas=(opt.beta1, opt.beta2))
      

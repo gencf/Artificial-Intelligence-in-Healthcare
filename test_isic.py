@@ -12,11 +12,10 @@ from IoU import calculateIoU
 def mean_iou_np(gt_path, y_pred, **kwargs):
     
     groundtruthMask = cv2.imread(gt_path, 0)
-    y_pred *= 255
-    y_pred = y_pred.astype('float32')
     print(np.unique(y_pred))
     shape = groundtruthMask.shape[:2]
     predictedMask = cv2.resize(y_pred, shape[::-1])
+    predictedMask = 255*(predictedMask>0.5)
     print(np.unique(predictedMask))
     iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
     return iou

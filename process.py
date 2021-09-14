@@ -45,6 +45,39 @@ def dcm_loader(path, atype=0):
 def binary_loader(path, atype=0):
     img = cv2.imread(path,0)
     return [img, img]
+
+
+def process(paths, npy_path): # process 2
+    height = 192
+    width = 256
+
+    for path in paths:
+
+        count = 0
+        length = len(os.listdir(path))
+        imgs = np.uint8(np.zeros([length, height, width, 3]))
+        file_names = np.uint8(np.zeros([length, height, width, 3]))
+
+        img_path = os.path.join(path, "PNG")
+
+        for i,f in enumerate(os.listdir(img_path)):
+            file_name = os.path.join(img_path, f)
+            img = cv2.imread(file_name)
+            img = cv2.resize(img, (width, height))
+
+
+            imgs[count] = img
+            file_names.append(file_name)
+            count +=1 
+
+        if "iskemi" in path.lower():
+            np.save(os.path.join(npy_path, 'data_iskemi.npy'), imgs)
+            np.save(os.path.join(npy_path, 'mask_iskemi.npy'), masks)
+        
+        elif "kanama" in path.lower():
+            np.save(os.path.join(npy_path, 'data_kanama.npy'), imgs)
+            np.save(os.path.join(npy_path, 'mask_kanama.npy'), masks)
+ 
  
 root = 'new_dataset/' # change to your data folder path
 data_f = ['ISKEMI/train/PNG/','ISKEMI/test/PNG/','KANAMA/train/PNG/','KANAMA/test/PNG/']

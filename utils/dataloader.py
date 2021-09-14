@@ -74,27 +74,20 @@ def get_loader(image_root, gt_root, batchsize, shuffle=True, num_workers=4, pin_
 
 
 class test_dataset:
-    def __init__(self, image_root, gt_root):
-        self.images = np.load(image_root)
-        self.gts = np.load(gt_root)
+    def __init__(self, image):
+        self.image = image
 
         self.transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406],
                                  [0.229, 0.224, 0.225])
             ])
-        self.gt_transform = transforms.ToTensor()
-        self.size = len(self.images)
-        self.index = 0
 
     def load_data(self):
-        image = self.images[self.index]
+        image = self.image
         image = self.transform(image).unsqueeze(0)
-        gt = self.gts[self.index]
-        gt = gt/255.0
-        self.index += 1
-
-        return image, gt
+    
+        return image
 
 
 

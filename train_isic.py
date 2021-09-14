@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from test_isic import mean_dice_np, mean_iou_np
 import os
-import shutil
+import cv2
 
 
 def structure_loss(pred, mask):

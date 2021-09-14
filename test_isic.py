@@ -71,13 +71,13 @@ if __name__ == '__main__':
     image_root = '{}/data_iskemi_test.npy'.format(opt.test_path)
     gt_root = '{}/mask_iskemi_test.npy'.format(opt.test_path)
     test_loader = test_dataset(image_root, gt_root)
-    gt_path = os.path.join(opt.png_path, str(i) + ".png")
 
     dice_bank = []
     iou_bank = []
     acc_bank = []
 
     for i in range(test_loader.size):
+        
         image, gt = test_loader.load_data()        
         gt = 1*(gt>0.5)
         image = image.cuda()
@@ -93,6 +93,7 @@ if __name__ == '__main__':
             imageio.imwrite(opt.save_path+'/'+str(i)+'_gt.jpg', gt)
 
         dice = mean_dice_np(gt, res)
+        gt_path = os.path.join(opt.png_path, str(i) + ".png")
         iou = mean_iou_np(gt_path, res)
         acc = np.sum(res == gt) / (res.shape[0]*res.shape[1])
 

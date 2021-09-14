@@ -3,20 +3,6 @@ from matplotlib import pyplot as plt
 import cv2
 import os
 
-def loadMask(i):
-    """
-    reader = sitk.ImageFileReader()
-    reader.SetFileName(path)
-    sitkMask = reader.Execute();
-    mask = sitk.GetArrayFromImage(sitkMask)
-    """
-
-    mask = cv2.imread(i,0)
-    mask = cv2.resize(mask, (512, 512))
-    mask[mask > 50] = 255
-    mask[mask <= 50] = 0
-    return mask
-
 def showGrayScale(mask, title):
     pass
 
@@ -95,10 +81,13 @@ def calculateIoU(groundtruthMask, predictedMask, showSteps = False):
     return score
 
 if __name__ == "__main__":
-    path = "../new_dataset/ISKEMI/test/MASKS/"
+    path = "new_dataset/ISKEMI/test/MASKS/"
     for i in range(len(os.listdir(path))):
-        groundtruthMask = loadMask(path + str(i)+".png")
-        predictedMask = loadMask("/kaggle/working/results/"+ str(i) +"_pred.jpg")
+        groundtruthMask = cv2.imread(os.path.join(path, str(i) + ".png"), 0)
+        predictedMask = cv2.imread(os.path.join("results/", str(i) + ".png"), 0)
+        shape = groundtruthMask.shape[:2]
+        predictedMask = cv2.resize(predictedMask, shape[::-1])
+        predictedMask = 255*predictedMask
         iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
         iou = str(iou).replace(".", ",")
         print(iou)

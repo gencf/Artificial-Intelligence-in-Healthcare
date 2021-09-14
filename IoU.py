@@ -89,6 +89,7 @@ if __name__ == "__main__":
         print(np.unique(predictedMask))
         shape = groundtruthMask.shape[:2]
         predictedMask = cv2.resize(predictedMask, shape[::-1])
+        print(np.unique(predictedMask))
         predictedMask = 255*(predictedMask>0.5)
         print(np.unique(predictedMask))
         iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)

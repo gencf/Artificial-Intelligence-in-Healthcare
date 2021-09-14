@@ -56,7 +56,7 @@ if __name__ == '__main__':
     
     opt = parser.parse_args()
 
-    ckpt_path = os.path.join(opt.model_path, 'TransFuse_ISKEMI_' + str(opt.epoch) + '_Epoch.pth')
+    ckpt_path = os.path.join(opt.model_path, 'TransFuse_ISKEMI_' + str(opt.epoch) + '_Epoch_best.pth')
     
     model = TransFuse_S().cuda()
     model.load_state_dict(torch.load(ckpt_path))

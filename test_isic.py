@@ -88,5 +88,5 @@ if __name__ == '__main__':
         dice_bank.append(dice)
         iou_bank.append(iou)
 
-    print('Dice: {:.4f}, IoU: {:.4f}, Acc: {:.4f}'.
+    print('Dice: {:.4f}, IoU: {:f}, Acc: {:.4f}'.
         format(np.mean(dice_bank), np.mean(iou_bank), np.mean(acc_bank)))

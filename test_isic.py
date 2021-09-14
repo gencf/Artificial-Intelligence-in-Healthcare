@@ -53,7 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('--save_path', type=str, default="/kaggle/working/results", help='path to save inference segmentation')
     parser.add_argument('--epoch', type=int, default=50, help='epoch for inference')
     parser.add_argument('--model_path', type=str, default='/kaggle/working/models', help='path for testing models')
-    
+    parser.add_argument('--png_path', type=str, default='/kaggle/working/new_dataset/ISKEMI/test/MASKS')
     opt = parser.parse_args()
 
     ckpt_path = os.path.join(opt.model_path, 'TransFuse_ISKEMI_' + str(opt.epoch) + '_Epoch_best.pth')
@@ -71,6 +71,7 @@ if __name__ == '__main__':
     image_root = '{}/data_iskemi_test.npy'.format(opt.test_path)
     gt_root = '{}/mask_iskemi_test.npy'.format(opt.test_path)
     test_loader = test_dataset(image_root, gt_root)
+    gt_path = os.path.join(png_path, str(i)+".png")
 
     dice_bank = []
     iou_bank = []
@@ -92,12 +93,12 @@ if __name__ == '__main__':
             imageio.imwrite(opt.save_path+'/'+str(i)+'_gt.jpg', gt)
 
         dice = mean_dice_np(gt, res)
-        # iou = mean_iou_np(gt, res)
+        iou = mean_iou_np(gt_path, res)
         acc = np.sum(res == gt) / (res.shape[0]*res.shape[1])
 
         acc_bank.append(acc)
         dice_bank.append(dice)
-        # iou_bank.append(iou)
+        iou_bank.append(iou)
 
     print('Dice: {:.4f}, IoU: {:.4f}, Acc: {:.4f}'.
-        format(np.mean(dice_bank),  np.mean(acc_bank)))
+        format(np.mean(dice_bank), np.mean(iou_bank), np.mean(acc_bank)))

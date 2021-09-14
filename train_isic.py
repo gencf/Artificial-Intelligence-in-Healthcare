@@ -121,8 +121,7 @@ def test(model, path, png_path):
         res_path = os.path.join(opt.save_path, str(i) + '.png')  
         
         if opt.save_path is not None:
-            print(np.unique(res), np.unique(res*255))
-            cv2.imwrite(res_path, res*255)
+            cv2.imwrite(res_path, res)
             
         dice = mean_dice_np(gt, res)
         iou = mean_iou_np(gt_path, res_path)

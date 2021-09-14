@@ -83,8 +83,8 @@ def calculateIoU(groundtruthMask, predictedMask, showSteps = False):
 if __name__ == "__main__":
     path = "/kaggle/working/new_dataset/ISKEMI/test/MASKS/"
     for i in range(len(os.listdir(path))):
-        groundtruthMask = cv2.imread(path + str(i)+".png", 0)
-        predictedMask = cv2.imread("/kaggle/working/results/"+ str(i) +"_pred.jpg", 0)
+        groundtruthMask = cv2.imread(path + str(i) + ".png", 0)
+        predictedMask = cv2.imread("/kaggle/working/results/"+ str(i) +"_pred.png", 0)
         #predictedMask = predictedMask.astype('float32')
         print(np.unique(predictedMask))
         shape = groundtruthMask.shape[:2]

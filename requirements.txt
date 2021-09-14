@@ -1,5 +1,5 @@
-!pip install torch
-!pip install timm
-!pip install -U albumentations
-!pip install pydicom
-!pip install python-gdcm
+pip install torch
+pip install timm
+pip install -U albumentations
+pip install pydicom
+pip install python-gdcm

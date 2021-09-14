@@ -1,11 +1,8 @@
-# This program is written by Abubakr Shafique (abubakr.shafique@gmail.com) 
 import cv2
 import numpy as np
 import pydicom
-from google.colab.patches import cv2_imshow
 from pydicom.pixel_data_handlers.util import apply_modality_lut
 import os
-import sys
 
 def Dicom_to_Image(DCM_Img, Window_Min, Window_Max):
 

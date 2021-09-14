@@ -2,15 +2,9 @@ import numpy as np
 import cv2
 import os
 import shutil 
-import SimpleITK as sitk
 from windowing import output
-from google.colab.patches import cv2_imshow
-import pydicom
-
 import albumentations as A
-
 from windowing import output
-
 
 def rotate_image(image, angle):
     image_center = tuple(np.array(image.shape[1::-1]) / 2)

@@ -3,9 +3,9 @@ from torch import nn
 from torchvision import models
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data import Dataset
-
 import cv2
 import os
+import shutil
 
 class CTDataset(Dataset):
 
@@ -52,6 +52,9 @@ def classify(png_path, mask_path, iskemi_data_path, kanama_data_path, model_path
     os.makedirs(os.path.join(iskemi_data_path,"MASKS"), exist_ok=True)
     os.makedirs(os.path.join(kanama_data_path,"PNG"), exist_ok=True)
     os.makedirs(os.path.join(kanama_data_path,"MASKS"), exist_ok=True)
+    os.makedirs(os.path.join(iskemi_data_path, "RESULTS"), exist_ok=True)
+    os.makedirs(os.path.join(kanama_data_path, "RESULTS"), exist_ok=True)
+
 
     out_features = 2
     batch_size = 1
@@ -74,10 +77,10 @@ def classify(png_path, mask_path, iskemi_data_path, kanama_data_path, model_path
             label = pred.argmax(1).cpu().numpy()[0]
             
             if label == 0:  #iskemi
-                os.rename(os.path.join(png_path, file_name), os.path.join(iskemi_data_path, "PNG", file_name))
-                os.rename(os.path.join(mask_path, file_name), os.path.join(iskemi_data_path, "MASKS", file_name))
+                shutil.copy(os.path.join(png_path, file_name), os.path.join(iskemi_data_path, "PNG", file_name))
+                shutil.copy(os.path.join(mask_path, file_name), os.path.join(iskemi_data_path, "MASKS", file_name))
                 
             elif label == 1:  #kanama
-                os.rename(os.path.join(png_path, file_name), os.path.join(kanama_data_path, "PNG", file_name))
-                os.rename(os.path.join(mask_path, file_name), os.path.join(kanama_data_path, "MASKS", file_name))                
+                shutil.copy(os.path.join(png_path, file_name), os.path.join(kanama_data_path, "PNG", file_name))
+                shutil.copy(os.path.join(mask_path, file_name), os.path.join(kanama_data_path, "MASKS", file_name))                
     

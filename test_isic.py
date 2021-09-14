@@ -9,7 +9,7 @@ import cv2
 
 from IoU import calculateIoU
 
-def mean_iou_np(gt_path, res_path, **kwargs):
+def mean_iou_np(gt_path, res_path):
     
     groundtruthMask = cv2.imread(gt_path, 0)
     predictedMask = cv2.imread(res_path, 0)    

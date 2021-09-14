@@ -12,6 +12,7 @@ snapshots/
 results/
 models/
 npy_files/
+test_dataset/
 
 # Executables
 *.swf
@@ -165,3 +166,4 @@ cython_debug/
 new_dataset
 *.pth
 *.zip
+*.png

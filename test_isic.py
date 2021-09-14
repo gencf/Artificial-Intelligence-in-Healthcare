@@ -16,6 +16,7 @@ def mean_iou_np(gt_path, res_path, **kwargs):
     shape = groundtruthMask.shape[:2]
     predictedMask = cv2.resize(predictedMask, shape[::-1])
     print(np.unique(predictedMask))
+    predictedMask = 255*predictedMask
     iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
     return iou
 
@@ -78,7 +79,7 @@ if __name__ == '__main__':
         res_path = os.path.join(opt.save_path, str(i) + ".png") 
         
         if opt.save_path is not None:
-            cv2.imwrite(res_path, res*255)
+            cv2.imwrite(res_path, res)
         
         dice = mean_dice_np(gt, res)           
         iou = mean_iou_np(gt_path, res_path)

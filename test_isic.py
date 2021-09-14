@@ -92,7 +92,7 @@ if __name__ == '__main__':
             imageio.imwrite(opt.save_path+'/'+str(i)+'_gt.jpg', gt)
 
         dice = mean_dice_np(gt, res)
-        iou = mean_iou_np(gt, res)
+        # iou = mean_iou_np(gt, res)
         acc = np.sum(res == gt) / (res.shape[0]*res.shape[1])
 
         acc_bank.append(acc)

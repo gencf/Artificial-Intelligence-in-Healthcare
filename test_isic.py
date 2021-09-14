@@ -9,27 +9,15 @@ import cv2
 
 from IoU import calculateIoU
 
-def mean_iou_np(gt_path, y_pred, **kwargs):
+def mean_iou_np(gt_path, res_path, **kwargs):
     
     groundtruthMask = cv2.imread(gt_path, 0)
-    y_pred = y_pred.astype('float32')
+    predictedMask = cv2.imread(res_path, 0)    
     shape = groundtruthMask.shape[:2]
-    predictedMask = cv2.resize(y_pred, shape[::-1])
-    predictedMask = 255*(predictedMask>0.5)
+    predictedMask = cv2.resize(predictedMask, shape[::-1])
+    predictedMask = 255*predictedMask
     iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
     return iou
-
-    """
-    compute mean iou for binary segmentation map via numpy
-    """
-    # axes = (0, 1) 
-    # intersection = np.sum(np.abs(y_pred * y_true), axis=axes) 
-    # mask_sum = np.sum(np.abs(y_true), axis=axes) + np.sum(np.abs(y_pred), axis=axes)
-    # union = mask_sum  - intersection 
-    
-    # smooth = .001
-    # iou = (intersection + smooth) / (union + smooth)
-    # return iou
 
 def mean_dice_np(y_true, y_pred, **kwargs):
     """
@@ -85,14 +73,15 @@ if __name__ == '__main__':
 
         res = res.sigmoid().data.cpu().numpy().squeeze()
         res = 1*(res > 0.5)
-
-        if opt.save_path is not None:
-            cv2.imwrite(opt.save_path+'/'+str(i)+'_pred.png', res)
-            cv2.imwrite(opt.save_path+'/'+str(i)+'_gt.png', gt)
-
-        dice = mean_dice_np(gt, res)
+        
         gt_path = os.path.join(opt.png_path, str(i) + ".png")
-        iou = mean_iou_np(gt_path, res)
+        res_path = os.path.join(opt.save_path, str(i) + ".png") 
+        
+        if opt.save_path is not None:
+            cv2.imwrite(res_path, res)
+        
+        dice = mean_dice_np(gt, res)           
+        iou = mean_iou_np(gt_path, res_path)
         acc = np.sum(res == gt) / (res.shape[0]*res.shape[1])
 
         acc_bank.append(acc)

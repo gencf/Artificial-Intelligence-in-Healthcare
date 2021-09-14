@@ -15,7 +15,6 @@ def mean_iou_np(gt_path, res_path, **kwargs):
     predictedMask = cv2.imread(res_path, 0)    
     shape = groundtruthMask.shape[:2]
     predictedMask = cv2.resize(predictedMask, shape[::-1])
-    print(np.unique(predictedMask))
     predictedMask = 255*predictedMask
     iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
     return iou

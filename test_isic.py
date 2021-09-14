@@ -71,7 +71,7 @@ if __name__ == '__main__':
     image_root = '{}/data_iskemi_test.npy'.format(opt.test_path)
     gt_root = '{}/mask_iskemi_test.npy'.format(opt.test_path)
     test_loader = test_dataset(image_root, gt_root)
-    gt_path = os.path.join(png_path, str(i)+".png")
+    gt_path = os.path.join(opt.png_path, str(i) + ".png")
 
     dice_bank = []
     iou_bank = []

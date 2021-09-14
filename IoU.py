@@ -89,7 +89,7 @@ if __name__ == "__main__":
         print(np.unique(predictedMask), predictedMask.shape)
         predictedMask = cv2.resize(predictedMask, shape[::-1])
         print(np.unique(predictedMask), predictedMask.shape)
-        predictedMask = 255*(predictedMask>0.5)
+        predictedMask = 255*predictedMask
         print(np.unique(predictedMask), predictedMask.shape)
         iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
         iou = str(iou).replace(".", ",")

@@ -85,13 +85,12 @@ if __name__ == "__main__":
     for i in range(len(os.listdir(path))):
         groundtruthMask = cv2.imread(path + str(i) + ".png", 0)
         predictedMask = cv2.imread("/kaggle/working/results/"+ str(i) +"_pred.png", 0)
-        #predictedMask = predictedMask.astype('float32')
-        print(np.unique(predictedMask))
         shape = groundtruthMask.shape[:2]
+        print(np.unique(predictedMask), predictedMask.shape)
         predictedMask = cv2.resize(predictedMask, shape[::-1])
-        print(np.unique(predictedMask))
+        print(np.unique(predictedMask), predictedMask.shape)
         predictedMask = 255*(predictedMask>0.5)
-        print(np.unique(predictedMask))
+        print(np.unique(predictedMask), predictedMask.shape)
         iou = calculateIoU(groundtruthMask, predictedMask, showSteps = False)
         iou = str(iou).replace(".", ",")
         print(iou)

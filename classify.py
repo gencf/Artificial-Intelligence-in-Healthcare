@@ -73,7 +73,7 @@ def classify(png_path, mask_path, iskemi_data_path, kanama_data_path, model_path
         for batch_idx,(X,file_name) in enumerate(test_loader):
             X = torch.reshape(X, [batch_size, 1, 512, 512]).cuda().float()
             pred = net(X)
-            file_name = file_name[0].split("\\")[-1]
+            file_name = file_name[0].split("/")[-1]
             label = pred.argmax(1).cpu().numpy()[0]
             
             if label == 0:  #iskemi

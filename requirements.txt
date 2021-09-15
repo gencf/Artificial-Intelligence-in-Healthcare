@@ -3,3 +3,12 @@ pip install timm
 pip install -U albumentations
 pip install pydicom
 pip install python-gdcm
+
+# Clone TransFuse github folder
+# Download necessary files from INAN/SağlıktaYapayZeka/Download and extract to the TransFuse folder
+# Open a terminal in TransFuse folder
+sudo apt-get install wget
+mkdir pretrained
+cd pretrained
+wget https://dl.fbaipublicfiles.com/deit/deit_small_patch16_224-cd65a155.pth
+wget https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet34-43635321.pth

@@ -11,15 +11,15 @@ from utils.dataloader import test_dataset
 import cv2
 
 # PATHS
-dcm_path = "test_dataset\\PNG"           # folder contains dicoms
-mask_path = "test_dataset\\MASKS"          # folder contains masks
-resnet_path = "20.pth"                   # resnet.pth
-iskemi_path = "models\\iskemi_best.pth"        # iskemi.pth
-kanama_path = "models\\kanama_best.pth"        # kanama.pth
+dcm_path = "test_dataset/PNG"           # folder contains dicoms
+mask_path = "test_dataset/MASKS"          # folder contains masks
+resnet_path = "models/126_best.pth"                   # resnet.pth
+iskemi_path = "models/iskemi_best.pth"        # iskemi.pth
+kanama_path = "models/kanama_best.pth"        # kanama.pth
 
 output_png_path = "output"                  # save output pngs (0,80)
-kanama_data_path = "new_dataset\\KANAMA"    # save classified pngs and masks
-iskemi_data_path = "new_dataset\\ISKEMI"    # save classified pngs and masks
+kanama_data_path = "new_dataset/KANAMA"    # save classified pngs and masks
+iskemi_data_path = "new_dataset/ISKEMI"    # save classified pngs and masks
 
 height = 192    # DO NOT CHANGE THIS VALUE !!!!!!!!!!
 width = 256     # DO NOT CHANGE THIS VALUE !!!!!!!!!!

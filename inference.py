@@ -17,9 +17,9 @@ resnet_path = "models/126_best.pth"                   # resnet.pth
 iskemi_path = "models/iskemi_best.pth"        # iskemi.pth
 kanama_path = "models/kanama_best.pth"        # kanama.pth
 
-output_png_path = "output"                  # save output pngs (0,80)
-kanama_data_path = "new_dataset/KANAMA"    # save classified pngs and masks
-iskemi_data_path = "new_dataset/ISKEMI"    # save classified pngs and masks
+output_png_path = "results/filtered_images"           # save output pngs (0,80)
+kanama_data_path = "results/final_results/KANAMA"    # save classified pngs and masks
+iskemi_data_path = "results/final_results/ISKEMI"    # save classified pngs and masks
 
 height = 192    # DO NOT CHANGE THIS VALUE !!!!!!!!!!
 width = 256     # DO NOT CHANGE THIS VALUE !!!!!!!!!!
@@ -47,27 +47,41 @@ def inference(model_path, img):
 
 if __name__ == "__main__":
     
+    os.system("rm -rf results")
     output(dcm_path, output_png_path)   
     classify(png_path=output_png_path, mask_path=mask_path, iskemi_data_path=iskemi_data_path, kanama_data_path=kanama_data_path, model_path=resnet_path)
 
-    ious = []
+    iskemi_iou_results = []
     for i,f in enumerate(os.listdir(os.path.join(iskemi_data_path, "PNG"))):
         img = cv2.imread(os.path.join(iskemi_data_path, "PNG", f))
         img = cv2.resize(img, (width, height))
         result = inference(iskemi_path, img)
         cv2.imwrite(os.path.join(iskemi_data_path, "RESULTS", f), result)
         iou = mean_iou_np(os.path.join(iskemi_data_path, "MASKS", f), os.path.join(iskemi_data_path, "RESULTS", f))
-        ious.append(iou)
+        if not "IS" in f.split(".")[0]:
+            iou = 0
+            print("*"*10, "wrong classified image detected", "*"*10)
+        print(f, iou)  
+        iskemi_iou_results.append(iou)
 
-    print(f"ISKEMI Mean iou: {iou}")
+    iskemi_mean_iou = mean(iskemi_iou_results)
+    print(f"ISKEMI Mean iou: {iskemi_mean_iou}\n")
 
-    ious = []
+    kanama_iou_results = []
     for i,f in enumerate(os.listdir(os.path.join(kanama_data_path, "PNG"))):
         img = cv2.imread(os.path.join(kanama_data_path, "PNG", f))
         img = cv2.resize(img, (width, height))
         result = inference(kanama_path, img)
         cv2.imwrite(os.path.join(kanama_data_path, "RESULTS", f), result)
         iou = mean_iou_np(os.path.join(kanama_data_path, "MASKS", f), os.path.join(kanama_data_path, "RESULTS", f))
-        ious.append(iou)
+        if not "KA" in f.split(".")[0]:
+            iou = 0
+            print("*"*10, "wrong classified image detected", "*"*10)
+        print(f, iou)
+        kanama_iou_results.append(iou)
 
-    print(f"KANAMA Mean iou: {iou}")
+    kanama_mean_iou = mean(iskemi_iou_results)
+    print(f"KANAMA Mean iou: {kanama_mean_iou}\n")
+
+    total_mean_iou = mean(iskemi_iou_results + kanama_iou_results)
+    print(f"Total Mean IoU: {total_mean_iou}")

@@ -144,6 +144,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epoch', type=int, default=50, help='epoch number')
     parser.add_argument('--lr', type=float, default=7e-5, help='learning rate')
+    parser.add_argument('--wd', type=float, default=0, help='weight decay')
     parser.add_argument('--batchsize', type=int, default=16, help='training batch size')
     parser.add_argument('--grad_norm', type=float, default=2.0, help='gradient clipping norm')
     parser.add_argument('--train_path', type=str,
@@ -177,7 +178,7 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load(model_dir))
         
     params = model.parameters()
-    optimizer = torch.optim.Adam(params, opt.lr, betas=(opt.beta1, opt.beta2))
+    optimizer = torch.optim.Adam(params, opt.lr, betas=(opt.beta1, opt.beta2), weight_decay=opt.wd)
      
     image_root = '{}/data_iskemi_train.npy'.format(opt.train_path)
     gt_root = '{}/mask_iskemi_train.npy'.format(opt.train_path)

@@ -13,7 +13,7 @@ import cv2
 # PATHS
 dcm_path = "test_dataset/PNG"           # folder contains dicoms
 mask_path = "test_dataset/MASKS"          # folder contains masks
-resnet_path = "models/126_best.pth"                   # resnet.pth
+resnet_path = "models/second_classification_best.pth"                   # resnet.pth
 iskemi_path = "models/iskemi_best.pth"        # iskemi.pth
 kanama_path = "models/kanama_best.pth"        # kanama.pth
 

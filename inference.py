@@ -47,41 +47,59 @@ def inference(model_path, img):
 
 if __name__ == "__main__":
     
+    calculate_iou = False
+
     os.system("rm -rf results")
     output(dcm_path, output_png_path)   
-    classify(png_path=output_png_path, mask_path=mask_path, iskemi_data_path=iskemi_data_path, kanama_data_path=kanama_data_path, model_path=resnet_path)
+    classify(calculate_iou=False, png_path=output_png_path, mask_path=mask_path, iskemi_data_path=iskemi_data_path, kanama_data_path=kanama_data_path, model_path=resnet_path)
 
     iskemi_iou_results = []
+    kanama_iou_results = []
+
     for i,f in enumerate(os.listdir(os.path.join(iskemi_data_path, "PNG"))):
         img = cv2.imread(os.path.join(iskemi_data_path, "PNG", f))
         img = cv2.resize(img, (width, height))
         result = inference(iskemi_path, img)
         cv2.imwrite(os.path.join(iskemi_data_path, "RESULTS", f), result)
-        iou = mean_iou_np(os.path.join(iskemi_data_path, "MASKS", f), os.path.join(iskemi_data_path, "RESULTS", f))
-        if not "IS" in f.split(".")[0]:
-            iou = 0
-            print("*"*10, "wrong classified image detected", "*"*10)
-        print(f, iou)  
-        iskemi_iou_results.append(iou)
 
-    iskemi_mean_iou = mean(iskemi_iou_results)
-    print(f"ISKEMI Mean iou: {iskemi_mean_iou}\n")
+        if calculate_iou:
+            iou = mean_iou_np(os.path.join(iskemi_data_path, "MASKS", f), os.path.join(iskemi_data_path, "RESULTS", f))
+            if not "IS" in f.split(".")[0]:
+                iou = 0
+                print("*"*10, "wrong classified image detected", "*"*10)
+            print(f, iou)  
+            iskemi_iou_results.append(iou)
 
-    kanama_iou_results = []
+        shape = cv2.imread(os.path.join(output_png_path, f), 0).shape[:2]
+        result = cv2.imread(os.path.join(iskemi_data_path, "RESULTS", f), 0)
+        result = cv2.resize(result, shape[::-1])
+        cv2.imwrite(os.path.join(iskemi_data_path, "RESULTS", f), result)
+
+    if calculate_iou:
+        iskemi_mean_iou = mean(iskemi_iou_results)
+        print(f"ISKEMI Mean iou: {iskemi_mean_iou}\n")
+
     for i,f in enumerate(os.listdir(os.path.join(kanama_data_path, "PNG"))):
         img = cv2.imread(os.path.join(kanama_data_path, "PNG", f))
         img = cv2.resize(img, (width, height))
         result = inference(kanama_path, img)
         cv2.imwrite(os.path.join(kanama_data_path, "RESULTS", f), result)
-        iou = mean_iou_np(os.path.join(kanama_data_path, "MASKS", f), os.path.join(kanama_data_path, "RESULTS", f))
-        if not "KA" in f.split(".")[0]:
-            iou = 0
-            print("*"*10, "wrong classified image detected", "*"*10)
-        print(f, iou)
-        kanama_iou_results.append(iou)
 
-    kanama_mean_iou = mean(iskemi_iou_results)
-    print(f"KANAMA Mean iou: {kanama_mean_iou}\n")
+        if calculate_iou:
+            iou = mean_iou_np(os.path.join(kanama_data_path, "MASKS", f), os.path.join(kanama_data_path, "RESULTS", f))
+            if not "KA" in f.split(".")[0]:
+                iou = 0
+                print("*"*10, "wrong classified image detected", "*"*10)
+            print(f, iou)
+            kanama_iou_results.append(iou)
+            
+        shape = cv2.imread(os.path.join(output_png_path, f), 0).shape[:2]
+        result = cv2.imread(os.path.join(kanama_data_path, "RESULTS", f), 0)
+        result = cv2.resize(result, shape[::-1])
+        cv2.imwrite(os.path.join(kanama_data_path, "RESULTS", f), result)
 
-    total_mean_iou = mean(iskemi_iou_results + kanama_iou_results)
-    print(f"Total Mean IoU: {total_mean_iou}")
+    if calculate_iou:
+        kanama_mean_iou = mean(kanama_iou_results)
+        print(f"KANAMA Mean iou: {kanama_mean_iou}\n")
+        total_mean_iou = mean(iskemi_iou_results + kanama_iou_results)
+        print(f"Total Mean IoU: {total_mean_iou}")

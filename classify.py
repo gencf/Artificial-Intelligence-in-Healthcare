@@ -9,7 +9,7 @@ import shutil
 
 class CTDataset(Dataset):
 
-    def __init__(self, data_dir, binary_classification, inference=False):
+    def __init__(self, data_dir, binary_classification, inference=False, calculate_iou=False):
         self.inference = inference
         self.data = []
         for i,f in enumerate(os.listdir(data_dir)):
@@ -47,14 +47,15 @@ class CTDataset(Dataset):
         return sample
 
 
-def classify(png_path, mask_path, iskemi_data_path, kanama_data_path, model_path):
+def classify(png_path, mask_path, iskemi_data_path, kanama_data_path, model_path, calculate_iou=False):
     os.makedirs(os.path.join(iskemi_data_path,"PNG"), exist_ok=True)
-    os.makedirs(os.path.join(iskemi_data_path,"MASKS"), exist_ok=True)
     os.makedirs(os.path.join(kanama_data_path,"PNG"), exist_ok=True)
-    os.makedirs(os.path.join(kanama_data_path,"MASKS"), exist_ok=True)
     os.makedirs(os.path.join(iskemi_data_path, "RESULTS"), exist_ok=True)
     os.makedirs(os.path.join(kanama_data_path, "RESULTS"), exist_ok=True)
 
+    if calculate_iou:
+        os.makedirs(os.path.join(iskemi_data_path,"MASKS"), exist_ok=True)
+        os.makedirs(os.path.join(kanama_data_path,"MASKS"), exist_ok=True)
 
     out_features = 2
     batch_size = 1
@@ -78,9 +79,11 @@ def classify(png_path, mask_path, iskemi_data_path, kanama_data_path, model_path
             
             if label == 0:  #iskemi
                 shutil.copy(os.path.join(png_path, file_name), os.path.join(iskemi_data_path, "PNG", file_name))
-                shutil.copy(os.path.join(mask_path, file_name), os.path.join(iskemi_data_path, "MASKS", file_name))
+                if calculate_iou:
+                    shutil.copy(os.path.join(mask_path, file_name), os.path.join(iskemi_data_path, "MASKS", file_name))
                 
             elif label == 1:  #kanama
                 shutil.copy(os.path.join(png_path, file_name), os.path.join(kanama_data_path, "PNG", file_name))
-                shutil.copy(os.path.join(mask_path, file_name), os.path.join(kanama_data_path, "MASKS", file_name))                
+                if calculate_iou:
+                    shutil.copy(os.path.join(mask_path, file_name), os.path.join(kanama_data_path, "MASKS", file_name))                
     

@@ -11,7 +11,7 @@ from utils.dataloader import test_dataset
 import cv2
 
 # PATHS
-dcm_path = "test_dataset/PNG"           # folder contains dicoms
+dcm_path = "DICOM"           # folder contains dicoms
 mask_path = "test_dataset/MASKS"          # folder contains masks
 resnet_path = "models/second_classification_best.pth"                   # resnet.pth
 iskemi_path = "models/iskemi_best.pth"        # iskemi.pth
@@ -46,12 +46,12 @@ def inference(model_path, img):
                 
 
 if __name__ == "__main__":
-    
+
     calculate_iou = False
 
     os.system("rm -rf results")
     output(dcm_path, output_png_path)   
-    classify(calculate_iou=False, png_path=output_png_path, mask_path=mask_path, iskemi_data_path=iskemi_data_path, kanama_data_path=kanama_data_path, model_path=resnet_path)
+    classify(calculate_iou=calculate_iou, png_path=output_png_path, mask_path=mask_path, iskemi_data_path=iskemi_data_path, kanama_data_path=kanama_data_path, model_path=resnet_path)
 
     iskemi_iou_results = []
     kanama_iou_results = []
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         shape = cv2.imread(os.path.join(output_png_path, f), 0).shape[:2]
         result = cv2.imread(os.path.join(kanama_data_path, "RESULTS", f), 0)
         result = cv2.resize(result, shape[::-1])
-        cv2.imwrite(os.path.join(kanama_data_path, "RESULTS", f), result)
+        cv2.imwrite(os.path.join(kanama_data_path, "RESULTS", f), result*2)
 
     if calculate_iou:
         kanama_mean_iou = mean(kanama_iou_results)

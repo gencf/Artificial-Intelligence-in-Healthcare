@@ -1,3 +1,3 @@
 # Artificial Intelligence in Healthcare Competition TEKNOFEST
 
-The classification of detection, classification, and the segmentation of the brain stroke using ResNet-18 and a state-of-art medical image segmentation model named TransFuse.
+The classification of the brain stroke as ischemic stroke or hemorrhagic stroke using the ResNet-18 framework.

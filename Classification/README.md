@@ -1,1 +1,0 @@
-# Saglikta-Yapay-Zeka
